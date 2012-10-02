@@ -8,6 +8,8 @@ from boto.ec2.connection import EC2Connection
 from paramiko.pkey import PKey
 from paramiko.rsakey import RSAKey
 
+__all__ = 'App',
+
 
 class App(object):
     """Application configuration.  It takes keyword-only parameters

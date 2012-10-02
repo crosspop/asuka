@@ -1,3 +1,5 @@
 Asuka.egg-info
 .*.swp
+*_id_rsa
 *.pyc
+*.yml
