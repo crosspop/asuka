@@ -1,5 +1,5 @@
-惣流
-====
+アスカ
+======
 
 Asuka is a deploy system for Python web apps and it is intended to be
 designed to highly depend on Distribute_ (a modern fork of setuptools_),
