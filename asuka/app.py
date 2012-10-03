@@ -68,12 +68,18 @@ class App(object):
         if keys:
             key_pair = keys[0]
         else:
-            pub = ' '.join((pkey.get_name(), pkey.get_base64(), name))
             key_pair = self.ec2_connection.import_key_pair(
                 self.key_name,
-                pub
+                self.public_key_string
             )
         self._key_pair = key_pair
+
+    @property
+    def public_key_string(self):
+        """(:class:`basestring`) The public key string."""
+        elements = (self.private_key.get_name(),
+                    self.private_key.get_base64(), self.key_name)
+        return ' '.join(elements)
 
     @property
     def key_pair(self):
