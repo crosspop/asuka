@@ -5,6 +5,7 @@
 import io
 
 from boto.ec2.connection import EC2Connection
+from github3.repos import Repository
 from paramiko.pkey import PKey
 from paramiko.rsakey import RSAKey
 
@@ -64,6 +65,7 @@ class App(object):
             raise TypeError('private_key must be an instance of paramiko.'
                             'pkey.PKey, not ' + repr(pkey))
         self._private_key = pkey
+        self._create_github_deploy_key()
         keys = self.ec2_connection.get_all_key_pairs([self.key_name])
         if keys:
             key_pair = keys[0]
@@ -101,3 +103,41 @@ class App(object):
     def key_name(self):
         """(:class:`basestring`) The human-readable title of the key pair."""
         return self.KEY_PAIR_NAME_FORMAT.format(app=self)
+
+    @property
+    def github(self):
+        """(:class:`github3.GitHub <github3.github.GitHub>`) The GitHub
+        connection.
+
+        """
+        return self.repository._session
+
+    @property
+    def repository(self):
+        """(:class:`github3.repos.Repository`) The repository of the app."""
+        return getattr(self, '_reposistory', None)
+
+    @repository.setter
+    def repository(self, repos):
+        if not isinstance(repos, Repository):
+            raise TypeError('repository must be an instance of github3.repos.'
+                            'Repository, not ' + repr(repos))
+        self._repository = repos
+        if hasattr(self, '_private_key'):
+            self._create_github_deploy_key()
+
+    def _create_github_deploy_key(self):
+        try:
+            repos = self._repository
+        except AttributeError:
+            pass
+        else:
+            actual_key = self.private_key.get_base64()
+            for key in repos.list_keys():
+                if key.title != self.key_name:
+                    continue
+                elif key.key.split()[1] != actual_key:
+                    continue
+                break
+            else:
+                repos.create_key(self.key_name, self.public_key_string)

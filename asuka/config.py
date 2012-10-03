@@ -8,6 +8,7 @@ the runtime-changed configuration back to the file.
 import os.path
 
 from boto.ec2 import connect_to_region
+from github3.api import authorize, login
 from paramiko.rsakey import RSAKey
 from yaml import dump, load
 
@@ -74,7 +75,30 @@ def app_from_config_file(filename):
             os.path.join(dirname, private_key)
         )
         config['private_key'] = private_key
+    gh_auth = None
+    try:
+        gh_token = config['repository']['token']
+        gh_repository = config['repository']['repository']
+    except KeyError:
+        try:
+            gh_login = config['repository']['login']
+            gh_password = config['repository']['password']
+            gh_repository = config['repository']['repository']
+        except KeyError:
+            gh_token = None
+        else:
+            gh_auth = authorize(gh_login, gh_password, ['repo'],
+                               'Asuka Deployment System')
+            gh_token = str(gh_auth.token)
+    if gh_token:
+        gh = login(token=gh_token)
+        config['repository'] = gh.repository(*gh_repository.split('/', 1))
     app, delta = app_from_config(config)
+    if gh_auth:
+        delta['repository'] = {
+            'token': gh_token,
+            'repository': gh_repository
+        }
     if delta:
         try:
             private_key = delta['private_key']
