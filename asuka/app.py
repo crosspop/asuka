@@ -141,3 +141,7 @@ class App(object):
                 break
             else:
                 repos.create_key(self.key_name, self.public_key_string)
+
+    def __repr__(self):
+        c = type(self)
+        return '<{0}.{1} {2!r}>'.format(c.__module__, c.__name__, self.name)
