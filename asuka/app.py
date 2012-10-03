@@ -64,13 +64,15 @@ class App(object):
             raise TypeError('private_key must be an instance of paramiko.'
                             'pkey.PKey, not ' + repr(pkey))
         self._private_key = pkey
-        name = self.KEY_PAIR_NAME_FORMAT.format(app=self)
-        keys = self.ec2_connection.get_all_key_pairs([name])
+        keys = self.ec2_connection.get_all_key_pairs([self.key_name])
         if keys:
             key_pair = keys[0]
         else:
             pub = ' '.join((pkey.get_name(), pkey.get_base64(), name))
-            key_pair = self.ec2_connection.import_key_pair(name, pub)
+            key_pair = self.ec2_connection.import_key_pair(
+                self.key_name,
+                pub
+            )
         self._key_pair = key_pair
 
     @property
@@ -83,7 +85,13 @@ class App(object):
             return self._key_pair
         except AttributeError:
             self._key_pair = self.ec2_connection.create_key_pair(
-                self.KEY_PAIR_NAME_FORMAT.format(app=self)
+                self.key_name
             )
             private_key = str(self._key_pair.material)
             self._private_key = RSAKey.from_private_key(io.BytesIO(private_key))
+            self._create_github_deploy_key()
+
+    @property
+    def key_name(self):
+        """(:class:`basestring`) The human-readable title of the key pair."""
+        return self.KEY_PAIR_NAME_FORMAT.format(app=self)
