@@ -115,7 +115,7 @@ class App(object):
     @property
     def repository(self):
         """(:class:`github3.repos.Repository`) The repository of the app."""
-        return getattr(self, '_reposistory', None)
+        return getattr(self, '_repository', None)
 
     @repository.setter
     def repository(self, repos):
