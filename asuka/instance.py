@@ -197,6 +197,24 @@ class Instance(LoggerProviderMixin):
             out.close()
             err.close()
 
+    def sudo(self, command, environ={}):
+        """The same as :meth:`do()` except the command is executed
+        by superuser.
+
+        """
+        if not isinstance(environ, collections.Mapping):
+            raise TypeError('environ must be mapping, not ' +
+                            repr(environ))
+        environ = [k + '=' + pipes.quote(v) for k, v in environ.items()]
+        if isinstance(command, basestring):
+            command = 'sudo {0} {2}'.format(' '.join(environ), command)
+        elif isinstance(command, collections.Sequence):
+            command = ['sudo'] + environ + list(command)
+        else:
+            raise TypeError('command must be a string or a sequence of '
+                            'strings, not ' + repr(command))
+        self.do(command)
+
     @contextlib.contextmanager
     def sftp(self):
         with self as client:
@@ -215,13 +233,63 @@ class Instance(LoggerProviderMixin):
             fr.set_pipelined(True)
             yield fr
 
-    def put_file(self, local_path, remote_path):
-        with self.sftp() as sftp:
-            sftp.put(local_path, remote_path)
+    def put_file(self, local_path, remote_path, sudo=False):
+        """Uploads the ``local_path`` file to the ``remote_path``.
 
-    def remove_file(self, path):
-        with self.sftp() as sftp:
-            sftp.remove(path)
+        :param local_path: the local path to upload
+        :type local_path: :class:`basestring`
+        :param remote_path: the remote path
+        :type remote_path: :class:`basestring`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+
+        """
+        with self:
+            if sudo:
+                orig_path = remote_path
+                remote_path = '/tmp/' + remote_path.replace('/', '-')
+            with self.sftp() as sftp:
+                sftp.put(local_path, remote_path)
+            if sudo:
+                self.sudo(['mv', remote_path, orig_path])
+                self.sudo(['chown', 'root:root', orig_path])
+
+    def write_file(self, path, content, sudo=False):
+        """Writes the ``content`` to the remote ``path``.
+        Useful for saving configuration files.
+
+        :param path: the remote path to write
+        :type path: :class:`basestring`
+        :param content: the file content
+        :type content: :class:`str`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+
+        """
+        if sudo:
+            orig_path = path
+            path = '/tmp/' + path.replace('/', '-')
+        with self:
+            with self.open_file(path, 'wb') as f:
+                f.write(content)
+            if sudo:
+                self.sudo(['mv', path, orig_path])
+                self.sudo(['chown', 'root:root', orig_path])
+
+    def remove_file(self, path, sudo=False):
+        """Deletes the ``path`` from the remote.
+
+        :param path: the path to delete
+        :type path: :class:`basestring`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+
+        """
+        if sudo:
+            self.sudo(['rm', path])
+        else:
+            with self.sftp() as sftp:
+                sftp.remove(path)
 
 
 class WaitTimeoutError(RuntimeError):
