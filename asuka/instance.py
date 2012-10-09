@@ -2,7 +2,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+import collections
 import contextlib
+import pipes
 import socket
 import time
 
@@ -140,7 +142,41 @@ class Instance(LoggerProviderMixin):
         if self.instance.state != state:
             raise WaitTimeoutError(number=trial, seconds=time.time() - start)
 
-    def do(self, command):
+    def do(self, command, environ={}):
+        """Executes the given ``command`` on the SSH connection session.
+        If there's no currently running session, it implictly connects
+        to the instance.
+
+        The ``command`` can be a raw string or a sequence of commands
+        to be quoted::
+
+            instance.do('echo "Hello world"')
+            instance.do(['echo', 'Hello world'])
+
+        It can take environment variables to set::
+
+            instance.do('date', environ={'LANG': 'ko_KR'})
+
+        :param command: the command to execute.  if it isn't string
+                        but sequence, it becomes quoted and joined
+        :type command: :class:`basestring`, :class:`collections.Sequence`
+        :param environ: optional environment variables
+        :type environ: :class:`collections.Mapping`
+
+        """
+        if not isinstance(command, basestring):
+            if isinstance(command, collections.Sequence):
+                command = ' '.join(pipes.quote(c) for c in command)
+            else:
+                raise TypeError('command must be a string or a sequence of '
+                                'strings, not ' + repr(command))
+        if not isinstance(environ, collections.Mapping):
+            raise TypeError('environ must be mapping, not ' +
+                            repr(environ))
+        for env_key, env_val in environ.items():
+            command = '{0}={1} {2}'.format(env_key,
+                                           pipes.quote(env_val),
+                                           command)
         logger = self.get_logger('do')
         remote = self.instance.public_dns_name
         with self as client:
