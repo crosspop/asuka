@@ -219,6 +219,18 @@ class Instance(LoggerProviderMixin):
 
     @contextlib.contextmanager
     def sftp(self):
+        """Opens the context manager of SFTP session.  For example::
+
+            with instance.sftp():
+                instance.put_file('local_file', 'remote_file')
+
+        It yields the low-level :class:`paramiko.sftp_client.SFTPClient`
+        as well::
+
+            with instance.sftp() as sftp:
+                print sftp.getcwd()
+
+        """
         with self as client:
             if not self.sftp_depth:
                 self.sftp_client = client.open_sftp()
