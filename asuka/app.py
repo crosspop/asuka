@@ -28,6 +28,10 @@ class App(object):
     #: to invoke APIs.
     ec2_connection = None
 
+    #: (:class:`basestring`) The name of the Asuka configuration directory
+    #: in the repository.  The default uses :file:`asuka/`.
+    config_dir = 'asuka/'
+
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
