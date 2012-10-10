@@ -4,6 +4,7 @@
 """
 import re
 
+from .app import App
 from .instance import Instance
 
 __all__ = 'Service',
@@ -12,6 +13,8 @@ __all__ = 'Service',
 class Service(object):
     """The inteface of services.
 
+    :param app: the application object
+    :type app: :class:`~asuka.app.App`
     :param name: the service name
     :type name: :class:`basestring`
     :param config: the config mapping object
@@ -29,19 +32,26 @@ class Service(object):
     #: (:class:`re.RegexObject`) The pattern of the valid service name.
     NAME_PATTERN = re.compile('^[a-z0-9_]{2,50}$')
 
+    #: (:class:`~asuka.app.App`) The application object.
+    app = None
+
     #: (:class:`str`) The service name e.g. ``'web'``.
     name = None
 
     #: (:class:`collections.Mapping`) The configuration dictionary.
     config = None
 
-    def __init__(self, name, config={},
+    def __init__(self, app, name, config={},
                  required_apt_packages=frozenset(),
                  required_python_packages=frozenset()):
-        if not isinstance(name, basestring):
+        if not isinstance(app, App):
+            raise TypeError('app must be an instance of asuka.app.App, not ' +
+                            repr(app))
+        elif not isinstance(name, basestring):
             raise TypeError('name must be a string, not ' + repr(name))
         elif not self.NAME_PATTERN.search(name):
             raise TypeError('invalid name: ' + repr(name))
+        self.app = app
         self.name = str(name)
         self.config = dict(config)
         self._required_apt_packages = frozenset(required_apt_packages)
@@ -75,6 +85,9 @@ class Service(object):
         if not isinstance(instance, Instance):
             raise TypeError('instance must be an asuka.instance.Instance '
                             'object, not ' + repr(instance))
+        elif instance.app is not self.app:
+            raise TypeError('{0!r} is not an instance for {1!r} but {0.app!r}'
+                            ''.format(instance, self.app))
         apt_packages = list(self.required_apt_packages)
         python_packages = list(self.required_python_packages)
         app_name = instance.app.name
