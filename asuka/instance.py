@@ -242,6 +242,19 @@ class Instance(LoggerProviderMixin):
 
     @contextlib.contextmanager
     def open_file(self, path, mode='r'):
+        """Opens the remote file as context manager::
+
+            with instance.open_file('/tmp/test', 'w') as:
+                print >> f, 'hello world'
+            with instance.open_file('/tmp/test') as:
+                print f.read()
+
+        :param path: the remote path of the file to open
+        :type path: :class:`basestring`
+        :param mode: the opening mode e.g. ``'r'``, ``'wb'``
+        :type mode: :class:`basestring`
+
+        """
         with self.sftp() as sftp:
             fr = sftp.open(path, mode)
             fr.set_pipelined(True)
