@@ -21,7 +21,7 @@ from .instance import Instance
 from .logger import LoggerProviderMixin
 from .service import Service
 
-__all__ = 'Build', 'UTC', 'capture_stdout', 'import_string'
+__all__ = 'Build', 'UTC', 'capture_stdout'
 
 
 @contextlib.contextmanager
