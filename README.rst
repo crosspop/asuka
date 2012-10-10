@@ -5,6 +5,8 @@ Asuka is a deploy system for Python web apps and it is intended to be
 designed to highly depend on Distribute_ (a modern fork of setuptools_),
 GitHub_, and `Amazon Web Services`_.
 
+http://crosspop.github.com/asuka/
+
 .. _Distribute: http://pypi.python.org/pypi/distribute
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _GitHub: https://github.com/

@@ -82,6 +82,6 @@ setup(
     author_email='dahlia' '@' 'crosspop.in',
     maintainer='Hong Minhee',
     maintainer_email='dahlia' '@' 'crosspop.in',
-    url='https://github.com/crosspop/asuka',
+    url='http://crosspop.github.com/asuka/',
     license='MIT License'
 )
