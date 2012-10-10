@@ -83,5 +83,6 @@ setup(
     maintainer='Hong Minhee',
     maintainer_email='dahlia' '@' 'crosspop.in',
     url='http://crosspop.github.com/asuka/',
-    license='MIT License'
+    license='MIT License',
+    cmdclass={'upload_doc': upload_doc}
 )
