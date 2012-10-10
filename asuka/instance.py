@@ -4,6 +4,8 @@
 """
 import collections
 import contextlib
+import os
+import os.path
 import pipes
 import socket
 import time
@@ -253,6 +255,48 @@ class Instance(LoggerProviderMixin):
             if sudo:
                 self.sudo(['mv', remote_path, orig_path])
                 self.sudo(['chown', 'root:root', orig_path])
+
+    def put_directory(self, local_path, remote_path, sudo=False):
+        """Uploads the ``local_path`` directory to the ``remote_path``.
+
+        :param local_path: the local path to upload
+        :type local_path: :class:`basestring`
+        :param remote_path: the remote path
+        :type remote_path: :class:`basestring`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+
+        """
+        with self.sftp():
+            self.make_directory(remote_path, sudo=sudo)
+            for name in os.listdir(local_path):
+                if name in ('.', '..'):
+                    continue
+                local_name = os.path.join(local_path, name)
+                remote_name = os.path.join(remote_path, name)
+                if os.path.isdir(local_name):
+                    f = self.put_directory
+                else:
+                    f = self.put_file
+                f(local_name, remote_name, sudo=sudo)
+
+    def make_directory(self, path, mode=0755, sudo=False):
+        """Creates the ``path`` directory into the remote.
+
+        :param path: the remote path of the directory to create
+        :type path: :class:`basestring`
+        :param mode: the permission mode of the directory
+                     e.g. ``0755``
+        :type mode: :class:`numbers.Integral`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+
+        """
+        if sudo:
+            self.sudo(['mkdir', '-m{0:04o}'.format(mode), '-p', path])
+        else:
+            with self.sftp() as sftp:
+                sftp.mkdir(path, mode)
 
     def write_file(self, path, content, sudo=False):
         """Writes the ``content`` to the remote ``path``.
