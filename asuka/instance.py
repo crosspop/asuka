@@ -207,15 +207,15 @@ class Instance(LoggerProviderMixin):
         if not isinstance(environ, collections.Mapping):
             raise TypeError('environ must be mapping, not ' +
                             repr(environ))
-        environ = [k + '=' + pipes.quote(v) for k, v in environ.items()]
+        envlist = [k + '=' + pipes.quote(v) for k, v in environ.items()]
         if isinstance(command, basestring):
-            command = 'sudo {0} {2}'.format(' '.join(environ), command)
+            command = 'sudo {0} {2}'.format(' '.join(envlist), command)
         elif isinstance(command, collections.Sequence):
-            command = ['sudo'] + environ + list(command)
+            command = ['sudo'] + envlist + list(command)
         else:
             raise TypeError('command must be a string or a sequence of '
                             'strings, not ' + repr(command))
-        self.do(command)
+        self.do(command, environ=environ)
 
     @contextlib.contextmanager
     def sftp(self):
