@@ -130,6 +130,17 @@ class Instance(LoggerProviderMixin):
             del self.client
 
     def wait_state(self, state='running', timeout=60, tick=5):
+        """Waits until the instance state becomes to the given
+        goal ``state`` (default is ``'running'``).
+
+        :param state: the goal state to wait.  default is ``'running'``
+        :type state: :class:`basestring`
+        :param timeout: the timeout in seconds.  default is 60 seconds
+        :type timeout: :class:`numbers.Real`
+        :param tick: the tick seconds to refresh.  default is 5 seconds
+        :type tick: :class:`numbers.Real`
+
+        """
         start = time.time()
         logger = self.get_logger('wait_state')
         trial = 1
