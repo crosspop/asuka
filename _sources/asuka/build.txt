@@ -1,3 +1,0 @@
-
-.. automodule:: asuka.build
-   :members:
