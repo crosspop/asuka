@@ -34,7 +34,6 @@ It supports the following servers through `Green Unicorn`_:
 .. _libevent: http://monkey.org/~provos/libevent/
 .. _Tornado: http://www.tornadoweb.org/
 .. _Meinheld: http://meinheld.org/
-.. _greenlet: http://packages.python.org/greenlet/
 .. _picoev: http://developer.cybozu.co.jp/kazuho/2009/08/picoev-a-tiny-e.html
 
 """
