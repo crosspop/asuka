@@ -1,0 +1,192 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>asuka.app — Application configuration &mdash; Asuka 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Asuka 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="asuka — Asuka" href="../asuka.html" />
+    <link rel="next" title="asuka.build — Each build of features" href="build.html" />
+    <link rel="prev" title="asuka — Asuka" href="../asuka.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="build.html" title="asuka.build — Each build of features"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../asuka.html" title="asuka — Asuka"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-asuka.app"></span><div class="section" id="asuka-app-application-configuration">
+<h1><a class="reference internal" href="#module-asuka.app" title="asuka.app"><tt class="xref py py-mod docutils literal"><span class="pre">asuka.app</span></tt></a> &#8212; Application configuration<a class="headerlink" href="#asuka-app-application-configuration" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="asuka.app.App">
+<em class="property">class </em><tt class="descclassname">asuka.app.</tt><tt class="descname">App</tt><big>(</big><em>**values</em><big>)</big><a class="headerlink" href="#asuka.app.App" title="Permalink to this definition">¶</a></dt>
+<dd><p>Application configuration.  It takes keyword-only parameters
+that are the same name of settable properties and attributes.</p>
+<dl class="attribute">
+<dt id="asuka.app.App.KEY_PAIR_NAME_FORMAT">
+<tt class="descname">KEY_PAIR_NAME_FORMAT</tt><em class="property"> = 'Asuka-{app.name}'</em><a class="headerlink" href="#asuka.app.App.KEY_PAIR_NAME_FORMAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The format string of AWS key pair name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.config_dir">
+<tt class="descname">config_dir</tt><em class="property"> = 'asuka/'</em><a class="headerlink" href="#asuka.app.App.config_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The name of the Asuka configuration directory
+in the repository.  The default uses <tt class="file docutils literal"><span class="pre">asuka/</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.ec2_connection">
+<tt class="descname">ec2_connection</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.app.App.ec2_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.pythonboto.org/en/latest/ref/ec2.html#boto.ec2.connection.EC2Connection" title="(in boto v2.6.0-dev)"><tt class="xref py py-class docutils literal"><span class="pre">boto.ec2.connection.EC2Connection</span></tt></a>) The EC2 connection
+to invoke APIs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.github">
+<tt class="descname">github</tt><a class="headerlink" href="#asuka.app.App.github" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://github3py.readthedocs.org/en/latest/github.html#github3.github.GitHub" title="(in github3.py v0.1b0)"><tt class="xref py py-class docutils literal"><span class="pre">github3.GitHub</span></tt></a>) The GitHub
+connection.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.key_name">
+<tt class="descname">key_name</tt><a class="headerlink" href="#asuka.app.App.key_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The human-readable title of the key pair.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.key_pair">
+<tt class="descname">key_pair</tt><a class="headerlink" href="#asuka.app.App.key_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.pythonboto.org/en/latest/ref/ec2.html#boto.ec2.keypair.KeyPair" title="(in boto v2.6.0-dev)"><tt class="xref py py-class docutils literal"><span class="pre">boto.ec2.keypair.KeyPair</span></tt></a>) The EC2 key pair matched to
+<a class="reference internal" href="#asuka.app.App.private_key" title="asuka.app.App.private_key"><tt class="xref py py-attr docutils literal"><span class="pre">private_key</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.name">
+<tt class="descname">name</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.app.App.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The name of the app.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.private_key">
+<tt class="descname">private_key</tt><a class="headerlink" href="#asuka.app.App.private_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">paramiko.pkey.PKey</span></tt>) The pair of public and private key.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.public_key_string">
+<tt class="descname">public_key_string</tt><a class="headerlink" href="#asuka.app.App.public_key_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The public key string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.repository">
+<tt class="descname">repository</tt><a class="headerlink" href="#asuka.app.App.repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://github3py.readthedocs.org/en/latest/repos.html#github3.repos.Repository" title="(in github3.py v0.1b0)"><tt class="xref py py-class docutils literal"><span class="pre">github3.repos.Repository</span></tt></a>) The repository of the app.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../asuka.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="build.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">asuka.build</span></tt> &#8212; Each build of features</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/asuka/app.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="build.html" title="asuka.build — Each build of features"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../asuka.html" title="asuka — Asuka"
+             >previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Hong Minhee.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

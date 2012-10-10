@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>asuka.build — Each build of features &mdash; Asuka 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Asuka 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="asuka — Asuka" href="../asuka.html" />
+    <link rel="next" title="asuka.commit — Git commits" href="commit.html" />
+    <link rel="prev" title="asuka.app — Application configuration" href="app.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="commit.html" title="asuka.commit — Git commits"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="app.html" title="asuka.app — Application configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-asuka.build"></span><div class="section" id="asuka-build-each-build-of-features">
+<h1><a class="reference internal" href="#module-asuka.build" title="asuka.build"><tt class="xref py py-mod docutils literal"><span class="pre">asuka.build</span></tt></a> &#8212; Each build of features<a class="headerlink" href="#asuka-build-each-build-of-features" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="asuka.build.Build">
+<em class="property">class </em><tt class="descclassname">asuka.build.</tt><tt class="descname">Build</tt><big>(</big><em>commit</em>, <em>instance</em><big>)</big><a class="headerlink" href="#asuka.build.Build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build of commit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>commit</strong> (<a class="reference internal" href="commit.html#asuka.commit.Commit" title="asuka.commit.Commit"><tt class="xref py py-class docutils literal"><span class="pre">Commit</span></tt></a>) &#8211; the commit of the build</li>
+<li><strong>instance</strong> (<a class="reference internal" href="instance.html#asuka.instance.Instance" title="asuka.instance.Instance"><tt class="xref py py-class docutils literal"><span class="pre">Instance</span></tt></a>) &#8211; the instance the build is/will be done.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="asuka.build.Build.SERVICE_FILENAME_PATTERN">
+<tt class="descname">SERVICE_FILENAME_PATTERN</tt><em class="property"> = &lt;SRE_Pattern object at 0x0000000108869fa0&gt;</em><a class="headerlink" href="#asuka.build.Build.SERVICE_FILENAME_PATTERN" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/re.html#re.RegexObject" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">re.RegexObject</span></tt></a>) The pattern of service configuration
+files.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.build.Build.app">
+<tt class="descname">app</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.build.Build.app" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) The application object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asuka.build.Build.archive_package">
+<tt class="descname">archive_package</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#asuka.build.Build.archive_package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the source tree and makes the source distribution.
+It yields triple of package name, filename of the source
+distribution, and its full path.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">build</span><span class="o">.</span><span class="n">archive_package</span><span class="p">()</span> <span class="k">as</span> <span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="n">sftp</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.build.Build.commit">
+<tt class="descname">commit</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.build.Build.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="commit.html#asuka.commit.Commit" title="asuka.commit.Commit"><tt class="xref py py-class docutils literal"><span class="pre">Commit</span></tt></a>) The commit of the build</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asuka.build.Build.install">
+<tt class="descname">install</tt><big>(</big><big>)</big><a class="headerlink" href="#asuka.build.Build.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Installs the build and required <a class="reference internal" href="#asuka.build.Build.services" title="asuka.build.Build.services"><tt class="xref py py-attr docutils literal"><span class="pre">services</span></tt></a>
+into the <a class="reference internal" href="#asuka.build.Build.instance" title="asuka.build.Build.instance"><tt class="xref py py-attr docutils literal"><span class="pre">instance</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.build.Build.instance">
+<tt class="descname">instance</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.build.Build.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="instance.html#asuka.instance.Instance" title="asuka.instance.Instance"><tt class="xref py py-class docutils literal"><span class="pre">Instance</span></tt></a>) The instance the build
+is/will be done.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.build.Build.services">
+<tt class="descname">services</tt><a class="headerlink" href="#asuka.build.Build.services" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Iterable" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt></a>) The list of declared
+<a class="reference internal" href="service.html#asuka.service.Service" title="asuka.service.Service"><tt class="xref py py-class docutils literal"><span class="pre">Service</span></tt></a> objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="asuka.build.UTC">
+<em class="property">class </em><tt class="descclassname">asuka.build.</tt><tt class="descname">UTC</tt><big>(</big><em>obj</em>, <em>*args</em>, <em>**keywords</em><big>)</big><a class="headerlink" href="#asuka.build.UTC" title="Permalink to this definition">¶</a></dt>
+<dd><p>UTC</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asuka.build.capture_stdout">
+<tt class="descclassname">asuka.build.</tt><tt class="descname">capture_stdout</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#asuka.build.capture_stdout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Captures the standard output (it will get silent) and yields
+the buffer.</p>
+<p>For example, the following prints nothing to console but
+<tt class="docutils literal"><span class="pre">result</span></tt> becomes <tt class="docutils literal"><span class="pre">'yeah'</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">capture_output</span><span class="p">()</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;yeah&#39;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="asuka.build.import_string">
+<tt class="descclassname">asuka.build.</tt><tt class="descname">import_string</tt><big>(</big><em>import_name</em>, <em>silent=False</em><big>)</big><a class="headerlink" href="#asuka.build.import_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports an object based on a string.  This is useful if you want to
+use import paths as endpoints or something similar.  An import path can
+be specified either in dotted notation (<tt class="docutils literal"><span class="pre">xml.sax.saxutils.escape</span></tt>)
+or with a colon as object delimiter (<tt class="docutils literal"><span class="pre">xml.sax.saxutils:escape</span></tt>).</p>
+<p>If <cite>silent</cite> is True the return value will be <cite>None</cite> if the import fails.</p>
+<p>For better debugging we recommend the new <tt class="xref py py-func docutils literal"><span class="pre">import_module()</span></tt>
+function to be used instead.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>import_name</strong> &#8211; the dotted name for the object to import.</li>
+<li><strong>silent</strong> &#8211; if set to <cite>True</cite> import errors are ignored and
+<cite>None</cite> is returned instead.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">imported object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="app.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.app</span></tt> &#8212; Application configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="commit.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">asuka.commit</span></tt> &#8212; Git commits</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/asuka/build.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="commit.html" title="asuka.commit — Git commits"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="app.html" title="asuka.app — Application configuration"
+             >previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Hong Minhee.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

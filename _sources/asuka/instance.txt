@@ -1,0 +1,3 @@
+
+.. automodule:: asuka.instance
+   :members:
