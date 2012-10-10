@@ -29,6 +29,12 @@ class Service(object):
     #: (:class:`re.RegexObject`) The pattern of the valid service name.
     NAME_PATTERN = re.compile('^[a-z0-9_]{2,50}$')
 
+    #: (:class:`str`) The service name e.g. ``'web'``.
+    name = None
+
+    #: (:class:`collections.Mapping`) The configuration dictionary.
+    config = None
+
     def __init__(self, name, config={},
                  required_apt_packages=frozenset(),
                  required_python_packages=frozenset()):
