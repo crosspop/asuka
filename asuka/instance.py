@@ -271,6 +271,28 @@ class Instance(LoggerProviderMixin):
             fr.set_pipelined(True)
             yield fr
 
+    def get_file(self, remote_path, local_path, sudo=False):
+        """Downloads the ``remote_path`` file to the ``local_path``.
+
+        :param remote_path: the remote path to download
+        :type remote_path: :class:`basestring`
+        :param local_path: the local path
+        :type local_path: :class:`basestring`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+
+        """
+        with self:
+            if sudo:
+                orig_path = remote_path
+                remote_path = '/tmp/' + remote_path.replace('/', '-')
+                self.sudo(['cp', orig_path, remote_path])
+                self.sudo(['chmod', '0777', remote_path])
+            with self.sftp() as sftp:
+                sftp.get(remote_path, local_path)
+                if sudo:
+                    self.remove_file(remote_path, sudo=True)
+
     def put_file(self, local_path, remote_path, sudo=False):
         """Uploads the ``local_path`` file to the ``remote_path``.
 
