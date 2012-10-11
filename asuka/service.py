@@ -4,7 +4,7 @@
 """
 import re
 
-from .app import App
+from .build import Build
 from .instance import Instance
 
 __all__ = 'Service',
@@ -32,6 +32,12 @@ class Service(object):
     #: (:class:`re.RegexObject`) The pattern of the valid service name.
     NAME_PATTERN = re.compile('^[a-z0-9_]{2,50}$')
 
+    #: (:class:`~asuka.build.Build`) The build object.
+    build = None
+
+    #: (:class:`~asuka.commit.Commit`) The commit object.
+    commit = None
+
     #: (:class:`~asuka.app.App`) The application object.
     app = None
 
@@ -41,17 +47,19 @@ class Service(object):
     #: (:class:`collections.Mapping`) The configuration dictionary.
     config = None
 
-    def __init__(self, app, name, config={},
+    def __init__(self, build, name, config={},
                  required_apt_packages=frozenset(),
                  required_python_packages=frozenset()):
-        if not isinstance(app, App):
-            raise TypeError('app must be an instance of asuka.app.App, not ' +
-                            repr(app))
+        if not isinstance(build, Build):
+            raise TypeError('build must be an instance of asuka.build.Build, '
+                            'not ' + repr(build))
         elif not isinstance(name, basestring):
             raise TypeError('name must be a string, not ' + repr(name))
         elif not self.NAME_PATTERN.search(name):
             raise TypeError('invalid name: ' + repr(name))
-        self.app = app
+        self.build = build
+        self.app = build.app
+        self.commit = build.commit
         self.name = str(name)
         self.config = dict(config)
         self._required_apt_packages = frozenset(required_apt_packages)

@@ -107,7 +107,7 @@ class Build(LoggerProviderMixin):
                         raise TypeError('type must be a subtype of asuka.'
                                         'service.Service')
                     service = service_cls(
-                        app=self.app,
+                        build=self,
                         name=match.group('name'),
                         **service_dict
                     )
