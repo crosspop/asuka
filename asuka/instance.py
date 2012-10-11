@@ -356,6 +356,30 @@ class Instance(LoggerProviderMixin):
             with self.sftp() as sftp:
                 sftp.mkdir(path, mode)
 
+    def read_file(self, path, sudo=False):
+        """Reads the file content of the remote ``path``.
+        Useful for reading configuration files.
+
+        :param path: the remote path to read
+        :type path: :class:`basestring`
+        :param sudo: as superuser or not.  default is ``False``
+        :type sudo: :class:`bool`
+        :return: the file content
+        :rtype content: :class:`str`
+
+        """
+        with self:
+            if sudo:
+                orig_path = path
+                path = '/tmp/' + path.replace('/', '-')
+                self.sudo(['cp', orig_path, path])
+                self.sudo(['chmod', '0777', path])
+            with self.open_file(path, 'rb') as f:
+                content = f.read()
+            if sudo:
+                self.remove_file(path, sudo=True)
+        return content
+
     def write_file(self, path, content, sudo=False):
         """Writes the ``content`` to the remote ``path``.
         Useful for saving configuration files.
