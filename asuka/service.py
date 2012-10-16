@@ -46,13 +46,23 @@ class Service(object):
     #: (:class:`str`) The service name e.g. ``'web'``.
     name = None
 
+    #: (:class:`collections.Sequence`) The shell commands to be invoked
+    #: before services are installed.
+    pre_install = None
+
+    #: (:class:`collections.Sequence`) The shell commands to be invoked
+    #: after all services are installed.
+    post_install = None
+
     #: (:class:`collections.Mapping`) The configuration dictionary.
     config = None
 
     def __init__(self, build, name, config={},
                  required_apt_repositories=frozenset(),
                  required_apt_packages=frozenset(),
-                 required_python_packages=frozenset()):
+                 required_python_packages=frozenset(),
+                 pre_install=[],
+                 post_install=[]):
         if not isinstance(build, Build):
             raise TypeError('build must be an instance of asuka.build.Build, '
                             'not ' + repr(build))
@@ -68,6 +78,8 @@ class Service(object):
         self._required_apt_repositories = frozenset(required_apt_repositories)
         self._required_apt_packages = frozenset(required_apt_packages)
         self._required_python_packages = frozenset(required_python_packages)
+        self.pre_install = list(pre_install)
+        self.post_install = list(post_install)
 
     @property
     def required_apt_repositories(self):

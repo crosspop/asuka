@@ -229,7 +229,13 @@ APTCACHE='/var/cache/apt/archives/'
                 )
             shutil.rmtree(config_temp_path)
             for service in services:
+                for cmd in service.pre_install:
+                    sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
+            for service in services:
                 service.install(self.instance)
+            for service in services:
+                for cmd in service.post_install:
+                    sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
 
     def __repr__(self):
         c = type(self)
