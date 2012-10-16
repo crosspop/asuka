@@ -252,7 +252,7 @@ APTCACHE='/var/cache/apt/archives/'
             sudo(['easy_install', '-i', index_url, remote_path] +
                  list(python_packages), environ={'CI': '1'})
             # remove package
-            ###########self.instance.remove_file(remote_path)
+            self.instance.remove_file(remote_path)
             for service in service_manifests[1:]:
                 for cmd in service.pre_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
