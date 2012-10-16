@@ -19,7 +19,6 @@ from yaml import load
 from .commit import Commit
 from .instance import Instance
 from .logger import LoggerProviderMixin
-from .service import Service
 
 __all__ = 'Build', 'UTC', 'capture_stdout'
 
@@ -103,9 +102,6 @@ class Build(LoggerProviderMixin):
                     if not isinstance(service_cls, type):
                         raise TypeError('type must be a class, not ' +
                                         repr(service_cls))
-                    elif not issubclass(service_cls, Service):
-                        raise TypeError('type must be a subtype of asuka.'
-                                        'service.Service')
                     service = service_cls(
                         build=self,
                         name=match.group('name'),
