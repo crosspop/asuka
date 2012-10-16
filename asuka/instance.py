@@ -227,7 +227,7 @@ class Instance(LoggerProviderMixin):
                             repr(environ))
         envlist = [k + '=' + pipes.quote(v) for k, v in environ.items()]
         if isinstance(command, basestring):
-            command = 'sudo {0} {2}'.format(' '.join(envlist), command)
+            command = 'sudo {0} {1}'.format(' '.join(envlist), command)
         elif isinstance(command, collections.Sequence):
             command = ['sudo'] + envlist + list(command)
         else:
