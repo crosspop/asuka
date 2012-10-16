@@ -74,6 +74,7 @@ class upload_doc(distutils.cmd.Command):
 setup(
     name='Asuka',
     packages=find_packages(),
+    package_data={'asuka': ['apt-fast']},
     install_requires=install_requires,
     version=VERSION,
     description='A deployment system for Python web apps using GitHub and EC2',

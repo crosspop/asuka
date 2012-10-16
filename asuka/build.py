@@ -12,6 +12,7 @@ import shutil
 import sys
 import tempfile
 
+from pkg_resources import resource_string
 from setuptools.sandbox import run_setup
 from werkzeug.utils import import_string
 from yaml import load
@@ -190,7 +191,26 @@ class Build(LoggerProviderMixin):
                 for repo in apt_repos:
                     sudo(['apt-add-repository', '-y', repo])
                 aptitude('update')
-            aptitude('install', *apt_packages)
+            with self.instance.sftp():
+                self.instance.write_file(
+                    '/usr/bin/apt-fast',
+                    resource_string(__name__, 'apt-fast'),
+                    sudo=True
+                )
+                self.instance.write_file('/etc/apt-fast.conf', '''
+_APTMGR=aptitude
+DOWNLOADBEFORE=true
+_MAXNUM=10
+DLLIST='/tmp/apt-fast.list'
+_DOWNLOADER='aria2c -c -j ${_MAXNUM} -i ${DLLIST} --connect-timeout=10 \
+             --timeout=600 -m0'
+DLDIR='/var/cache/apt/archives/apt-fast'
+APTCACHE='/var/cache/apt/archives/'
+                ''', sudo=True)
+            sudo(['chmod', '+x', '/usr/bin/apt-fast'])
+            aptitude('install', 'aria2')
+            sudo(['apt-fast', '-q', '-y', 'install'] + list(apt_packages),
+                 environ={'DEBIAN_FRONTEND': 'noninteractive'})
             with self.instance.sftp():
                 # uploads package
                 self.instance.put_file(package_path, remote_path)

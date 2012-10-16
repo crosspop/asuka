@@ -1,0 +1,319 @@
+#!/bin/bash
+#
+# apt-fast v1.7
+# Use this just like aptitude or apt-get for faster package downloading.
+#
+# Copyright: 2008-2012 Matt Parnell, http://www.mattparnell.com
+# Improvements, maintenance, revisions - 2012 Dominique Lasserre
+#
+# You may distribute this file under the terms of the GNU General
+# Public License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+[ -n "$DEBUG" ] && set -xv
+
+# Print colored messages.
+# Usage: msg "message text" "message type" "optional: err"
+# Message types are 'normal', 'hint' or 'warning'. Warnings and messages with a
+# third argument are piped to stderr.
+msg(){
+  case "$2" in
+    normal) beginColor="$cGreen";;
+    hint) beginColor="$cBlue";;
+    warning) beginColor="$cRed";;
+  esac
+
+  if [ -z "$3" ] && [ "$2" != "warning" ]; then
+    echo -e "${aptfast_prefix} ${beginColor}$1${endColor}";
+  else
+    echo -e "${aptfast_prefix} ${beginColor}$1${endColor}"; >&2
+  fi
+}
+
+# Search for known options and decide if root privileges are needed.
+root=1  # default value: we need root privileges
+option=
+for arguments in $@; do
+  if [ "$arguments" == "upgrade" ] ||
+      [ "$arguments" == "install" ] ||
+      [ "$arguments" == "dist-upgrade" ] ||
+      [ "$arguments" == "build-dep" ]; then
+    option="install"
+    break
+  elif [ "$arguments" == "clean" ] ||
+      [ "$arguments" == "autoclean" ]; then
+    option="clean"
+    break
+  elif [ "$arguments" == "download" ]; then
+    option="download"
+    root=0
+    break
+  elif [ "$arguments" == "source" ]; then
+    option="source"
+    root=0
+    break
+  elif [ "$arguments" == "changelog" ]; then
+    root=0
+    break
+  fi
+done
+
+# To handle priority of options correctly (environment over config file vars)
+# we need to preserve all interesting env variables. As this wouldn't be
+# difficult enough we have to preserve complete env vars (especially if value
+# ist set (even empty) or not) when changing context (sudo)...
+# Set a 'random' string to all unset variables.
+TMP_RANDOM="13979853562951413"
+TMP_LCK_FILE="${LCK_FILE-${TMP_RANDOM}}"
+TMP_DOWNLOADBEFORE="${DOWNLOADBEFORE-${TMP_RANDOM}}"
+TMP__APTMGR="${_APTMGR-${TMP_RANDOM}}"
+TMP_APTCACHE="${APTCACHE-${TMP_RANDOM}}"
+TMP_DLDIR="${DLDIR-${TMP_RANDOM}}"
+TMP_DLLIST="${DLLIST-${TMP_RANDOM}}"
+TMP_LISTDIR="${LISTDIR-${TMP_RANDOM}}"
+TMP__MAXMUM="${MAXMUM-${TMP_RANDOM}}"
+TMP_aptfast_prefix="${aptfast_prefix-${TMP_RANDOM}}"
+TMP_APT_FAST_TIMEOUT="${APT_FAST_TIMEOUT-${TMP_RANDOM}}"
+
+# Check for proper privileges.
+# Call explicitly with environment variables to get them into root conext.
+if [ "$root" = 1 -a "$UID" != 0 ]; then
+  exec sudo DEBUG="$DEBUG" \
+            LCK_FILE="$TMP_LCK_FILE" \
+            DOWNLOADBEFORE="$TMP_DOWNLOADBEFORE" \
+            _APTMGR="$TMP__APTMGR" \
+            APTCACHE="$TMP_APTCACHE" \
+            DLDIR="$TMP_DLDIR" \
+            DLLIST="$TMP_DLLIST" \
+            LISTDIR="$TMP_LISTDIR" \
+            _MAXMUM="$TMP_MAXMUM" \
+            aptfast_prefix="$TMP_aptfast_prefix" \
+            APT_FAST_TIMEOUT="$TMP_APT_FAST_TIMEOUT" "$0" "$@"
+fi
+
+
+# Define lockfile.
+# Use /tmp as directory because everybody (not only root) has to have write
+# permissions.
+# We need lock for non-root commands too, because we only have one download
+# list file.
+LCK_FILE="/tmp/apt-fast"
+
+# Set default package manager, APT cache, temporary download dir,
+# temporary download list file, and maximal parallel downloads
+_APTMGR=apt-get
+eval $(apt-config shell rootdir Dir)
+eval $(apt-config shell cachedir Dir::Cache)
+eval $(apt-config shell archivesdir Dir::Cache::archives)
+eval $(apt-config shell statedir Dir::State)
+eval $(apt-config shell listsdir Dir::State::lists)
+APTCACHE="${rootdir}${cachedir}${archivesdir}"
+DLDIR="$APTCACHE/apt-fast"
+DLLIST="/tmp/apt-fast.list"
+LISTDIR="${rootdir}${statedir}${listsdir}"
+_MAXINUM=5
+
+# Prefix in front of apt-fast output:
+aptfast_prefix=
+
+# Set color variables.
+cGreen='\e[0;32m'
+cRed='\e[0;31m'
+cBlue='\e[0;34m'
+endColor='\e[0m'
+
+# Set timout value for apt-fast download confirmation dialog.
+# Value is in seconds.
+APT_FAST_TIMEOUT=60
+
+
+# Load config file.
+CONFFILE="/etc/apt-fast.conf"
+source "$CONFFILE"
+
+# Now overwrite with preserved values if values were set before (compare with
+# 'random' string).
+[ "$TMP_LCK_FILE" = "$TMP_RANDOM" ] || LCK_FILE="$TMP_LCK_FILE"
+[ "$TMP_DOWNLOADBEFORE" = "$TMP_RANDOM" ] || DOWNLOADBEFORE="$TMP_DOWNLOADBEFORE"
+[ "$TMP__APTMGR" = "$TMP_RANDOM" ] || _APTMGR="$TMP__APTMGR"
+[ "$TMP_APTCACHE" = "$TMP_RANDOM" ] || APTCACHE="$TMP_APTCACHE"
+[ "$TMP_DLDIR" = "$TMP_RANDOM" ] || DLDIR="$TMP_DLDIR"
+[ "$TMP_DLLIST" = "$TMP_RANDOM" ] || DLLIST="$TMP_DLLIST"
+[ "$TMP_LISTDIR" = "$TMP_RANDOM" ] || LISTDIR="$TMP_LISTDIR"
+[ "$TMP__MAXMUM" = "$TMP_RANDOM" ] || _MAXMUM="$TMP__MAXMUM"
+[ "$TMP_aptfast_prefix" = "$TMP_RANDOM" ] || aptfast_prefix="$TMP_aptfast_prefix"
+[ "$TMP_APT_FAST_TIMEOUT" = "$TMP_RANDOM" ] || APT_FAST_TIMEOUT="$TMP_APT_FAST_TIMEOUT"
+
+
+# Disable colors if not executed in terminal.
+if [ ! -t 1 ]; then
+  cGreen=
+  cRed=
+  cBlue=
+  endColor=
+  #FIXME: Time not updated.
+  [ -z "$aptfast_prefix" ] && aptfast_prefix="[apt-fast $(date +"%T")]"
+fi
+
+
+# Check if a lock file exists.
+if [ -f "$LCK_FILE.lock" ]; then
+  msg "apt-fast already running!" "warning"
+  msg "Verify that all apt-fast processes are finished then remove $LCK_FILE.lock and try again." "hint"
+  exit 1
+fi
+
+# Remove lock file.
+LCK_RM() {
+  # Remove URI file to prevent write permissions issues in /tmp directory.
+  #[ -f "$DLLIST" ] && rm -f "$DLLIST"
+  if [ -n "$LOCKPID" ]; then
+    kill "$LOCKPID" && lockfile-remove "$LCK_FILE"
+  fi
+}
+
+# Remove lock file and exit with code 1.
+LCK_RM_1() {
+  LCK_RM
+  exit 1
+}
+
+trap "LCK_RM_1" 2 9 15
+
+# Get the package URLs.
+get_uris(){
+  #NOTE: aptitude doesn't have this functionality, so we use apt-get to get
+  #      package URIs.
+  apt-get -y --print-uris $@ | egrep -o -e "(ht|f)tp://[^\']+" > "$DLLIST"
+}
+
+# Create and insert a PID number to lockfile.
+lockfile-create "$LCK_FILE"
+lockfile-touch "$LCK_FILE" &
+# Declare global variable (to use it in LCK_RM function) and save PID of last
+# job running in background (lockfile-touch process):
+export LOCKPID="$!"
+
+# Make sure one of the download managers is enabled
+if [ -z "$_DOWNLOADER" ]; then
+  msg "You must configure $CONFFILE to use axel or aria2c." "normal" "err"
+  LCK_RM_1
+fi
+
+# Make sure package manager is available.
+if [ ! $(command -v "$_APTMGR") ]; then
+  msg "\`$_APTMGR\` command not available." "warning"
+  msg "You must configure $CONFFILE to use either apt-get or aptitude." "normal" "err"
+  LCK_RM_1
+fi
+
+
+# Run actions.
+if [ "$option" == "install" ]; then
+  msg "\n Working... this may take a while." "normal"
+
+  get_uris $@
+
+  # Check if "assume yes" switch is enabled and if yes enable $DOWNLOADBEFORE.
+  #TODO: Get real value over APT items APT::Get::Assume-Yes and
+  #      APT::Get::Assume-No .
+  #FIXME: Composed short options e.g. "-yV" are not recognised - we should use
+  #      getopts for proper option passing.
+  for option in $@; do
+    if [ "$option" == "-y" ] ||
+        [ "$option" == "--yes" ] ||
+        [ "$option" == "--assume-yes" ]; then
+      DOWNLOADBEFORE=true
+    elif [ "$option" == "--assume-no" ]; then
+      DOWNLOADBEFORE=
+    fi
+  done
+
+  # Test /tmp/apt-fast.list file exists AND not zero bytes.
+  # Then download all files from the list.
+  if [ $(cat "$DLLIST" | wc -l) -gt 0 ] && [ ! "$DOWNLOADBEFORE" ]; then
+    cat "$DLLIST"
+
+    echo -ne "${cRed} If you want to download the packages on your system press Y else n to abort. [Y/n]:  ${endColor}"
+
+    while ((!updsys)); do
+      read -sn1 -t "$APT_FAST_TIMEOUT" answer || { msg "\n Timed out." "warning"; LCK_RM_1; }
+      case "$answer" in
+        [JjYy])    result=1; updsys=1 ;;
+        [Nn])      result=0; updsys=1 ;;
+        "")        result=1; updsys=1 ;;
+        *)         updsys=0 ;;
+      esac
+    done
+  else
+    result=1
+  fi
+
+  echo
+
+  # Continue if answer was right or DOWNLOADBEFORE is enabled.
+  if ((result)); then
+    if [ -s "$DLLIST" ]; then
+      # Test if apt-fast directory is present where we put packages.
+      if [ ! -d "$DLDIR" ]; then
+        mkdir -p -- "$DLDIR"
+      fi
+
+      cd "$DLDIR" &>/dev/null || LCK_RM_1
+
+      #FIXME: Better handling of finished downloads but canceled apt-fast
+      #       axel redownloads deb again (with [0-9] suffix).
+      eval "${_DOWNLOADER}" # execute downloadhelper command
+      if [ $(find "$DLDIR" -printf . | wc -c) -gt 1 ]; then
+        # Move all packages to the apt install directory by force to ensure
+        # already existing debs which may be incomplete are replaced
+        find -type f -name "*.deb" -execdir mv -ft "$APTCACHE" {} \+
+      fi
+      cd - &>/dev/null
+    fi
+  else
+    LCK_RM_1
+  fi
+
+  #FIXME: quotes get lost: apt-fast install "foo*" -> apt-get install foo*
+  "${_APTMGR}" $@
+
+
+elif [ "$option" == "clean" ]; then
+  #FIXME: quotes get lost (see above)
+  "${_APTMGR}" $@ && {
+    find "$DLDIR" -maxdepth 1 -type f -delete
+    [ -f "$DLLIST" ] && rm -f -- "$DLLIST"*
+  }
+
+elif [ "$option" == "download" ]; then
+  #NOTE: axel does not recognize already downloaded packages.
+  get_uris $@
+  eval "${_DOWNLOADER}"
+
+elif [ "$option" == "source" ]; then
+  msg "\n Working... this may take a while.\n" "normal"
+  get_uris $@
+  eval "${_DOWNLOADER}"
+  # We use APT manager here to provide more verbose output. This method is
+  # slightly slower then extractiong packages manually after download but also
+  # more hardened (e.g. some options like --compile are available).
+  "${_APTMGR}" $@
+  # Uncomment following snippet to extract source directly and comment
+  # both lines before.
+  #while read srcfile; do
+  #  # extract only .dsc files
+  #  echo "$srcfile" | grep -q '\.dsc$' || continue
+  #  dpkg-source -x "$(basename "$srcfile")"
+  #done < "$DLLIST"
+
+# Execute package manager directly if unknown options are passed.
+else
+  #FIXME: quotes get lost (see above)
+  "${_APTMGR}" $@
+
+fi
+
+
+# After error or all done remove our lockfile
+LCK_RM
