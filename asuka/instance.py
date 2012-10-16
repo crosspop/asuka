@@ -194,21 +194,28 @@ class Instance(LoggerProviderMixin):
         remote = self.instance.public_dns_name
         with self as client:
             in_, out, err = client.exec_command(command)
+            channel = out.channel
             logger.info('[%s] %s', remote, command)
-            while 1:
-                out_line = out.readline()
-                err_line = err.readline()
-                if not (out_line or err_line):
-                    break
-                if out_line:
-                    logger.info('[%s: %s | stdout] %s',
-                                remote, command, out_line)
-                if err_line:
-                    logger.info('[%s: %s | stderr] %s',
-                                remote, command, err_line)
+            while not channel.exit_status_ready():
+                ready = False
+                if channel.recv_ready():
+                    out_line = out.readline()
+                    if out_line:
+                        logger.info('[%s: %s | stdout] %s',
+                                    remote, command, out_line)
+                    ready = True
+                if channel.recv_stderr_ready():
+                    err_line = err.readline()
+                    if err_line:
+                        logger.info('[%s: %s | stderr] %s',
+                                    remote, command, err_line)
+                    ready = True
+                if not ready:
+                    time.sleep(0.3)
             in_.close()
             out.close()
             err.close()
+            return channel.recv_exit_status()
 
     def sudo(self, command, environ={}):
         """The same as :meth:`do()` except the command is executed
@@ -226,7 +233,7 @@ class Instance(LoggerProviderMixin):
         else:
             raise TypeError('command must be a string or a sequence of '
                             'strings, not ' + repr(command))
-        self.do(command, environ=environ)
+        return self.do(command, environ=environ)
 
     @contextlib.contextmanager
     def sftp(self):
