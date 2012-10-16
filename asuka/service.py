@@ -117,19 +117,9 @@ class Service(object):
         elif instance.app is not self.app:
             raise TypeError('{0!r} is not an instance for {1!r} but {0.app!r}'
                             ''.format(instance, self.app))
-        apt_packages = list(self.required_apt_packages)
-        python_packages = list(self.required_python_packages)
         app_name = instance.app.name
         F = app_name, self.name
         with instance:
-            # Install required_apt_packages
-            instance.sudo(['aptitude', '-q', '-y', 'install'] + apt_packages,
-                          environ={'DEBIAN_FRONTEND': 'noninteractive'})
-            # Install required_python_packages
-            index_url = 'https://pypi.crate.io/simple/'
-            instance.sudo(['easy_install', '--index-url=' + index_url] +
-                           python_packages,
-                          environ={'CI': '1'})
             # Make directories
             instance.do([
                 'sudo', 'mkdir', '-p', '/etc/{0}/{1}'.format(*F),

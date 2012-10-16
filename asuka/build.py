@@ -162,27 +162,42 @@ class Build(LoggerProviderMixin):
                 remote_path = os.path.join('/tmp', filename)
         with self.instance:
             sudo = self.instance.sudo
+            def aptitude(*commands):
+                sudo(['aptitude', '-y'] + list(commands),
+                     environ={'DEBIAN_FRONTEND': 'noninteractive'})
             # create user for app
             sudo(['useradd', '-U', '-G', 'users,www-data', '-Mr',
                   self.app.name])
             # assume instance uses Ubuntu >= 12.04
+            apt_sources = re.sub(
+                '\n#\s*(deb(?:-src)?\s+http://[^.]\.ec2\.archive\.ubuntu\.com/'
+                'ubuntu/\s+[^-]+multiverse\n)',
+                lambda m: '\n' + m.group(1),
+                self.instance.read_file('/etc/apt/sources.list', sudo=True)
+            )
+            self.instance.write_file('/etc/apt/sources.list', apt_sources,
+                                     sudo=True)
             apt_repos = set()
-            apt_packages = [
+            apt_packages = set([
                 'build-essential', 'python-dev', 'python-setuptools'
-            ]
+            ])
+            python_packages = set()
+            for service in services:
+                apt_repos.update(service.required_apt_repositories)
+                apt_packages.update(service.required_apt_packages)
+                python_packages.update(service.required_python_packages)
             if apt_repos:
                 for repo in apt_repos:
                     sudo(['apt-add-repository', '-y', repo])
                 aptitude('update')
-            sudo(['aptitude', '-q', '-y', 'install'] + apt_packages,
-                 environ={'DEBIAN_FRONTEND': 'noninteractive'})
+            aptitude('install', *apt_packages)
             with self.instance.sftp():
                 # uploads package
                 self.instance.put_file(package_path, remote_path)
                 # crate.io is way faster than official PyPI mirros
                 index_url = 'https://pypi.crate.io/simple/'
                 sudo(['easy_install', '--index-url=' + index_url,
-                      remote_path],
+                      remote_path] + list(python_packages),
                      environ={'CI': '1'})
                 # remove package
                 self.instance.remove_file(remote_path)
