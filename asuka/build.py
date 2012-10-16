@@ -166,9 +166,14 @@ class Build(LoggerProviderMixin):
             sudo(['useradd', '-U', '-G', 'users,www-data', '-Mr',
                   self.app.name])
             # assume instance uses Ubuntu >= 12.04
+            apt_repos = set()
             apt_packages = [
                 'build-essential', 'python-dev', 'python-setuptools'
             ]
+            if apt_repos:
+                for repo in apt_repos:
+                    sudo(['apt-add-repository', '-y', repo])
+                aptitude('update')
             sudo(['aptitude', '-q', '-y', 'install'] + apt_packages,
                  environ={'DEBIAN_FRONTEND': 'noninteractive'})
             with self.instance.sftp():

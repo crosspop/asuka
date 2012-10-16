@@ -19,6 +19,8 @@ class Service(object):
     :type name: :class:`basestring`
     :param config: the config mapping object
     :type config: :class:`collections.Mapping`
+    :param required_apt_repositories: the set of APT repositories
+                                      the service uses
     :param required_apt_packages: the set of APT packages
                                   the service depends
     :type required_apt_packages: :class:`collections.Set`
@@ -48,6 +50,7 @@ class Service(object):
     config = None
 
     def __init__(self, build, name, config={},
+                 required_apt_repositories=frozenset(),
                  required_apt_packages=frozenset(),
                  required_python_packages=frozenset()):
         if not isinstance(build, Build):
@@ -62,8 +65,26 @@ class Service(object):
         self.commit = build.commit
         self.name = str(name)
         self.config = dict(config)
+        self._required_apt_repositories = frozenset(required_apt_repositories)
         self._required_apt_packages = frozenset(required_apt_packages)
         self._required_python_packages = frozenset(required_python_packages)
+
+    @property
+    def required_apt_repositories(self):
+        """(:class:`collections.Set`) The set of APT repository source lines
+        to add.  It takes source lines :program:`apt-add-repository`
+        can take e.g.::
+
+            frozenset([
+                'deb http://myserver/path/to/repo stable myrepo',
+                'http://myserver/path/to/repo myrepo',
+                'https://packages.medibuntu.org free non-free',
+                'http://extras.ubuntu.com/ubuntu ',
+                'ppa:user/repository'
+            ])
+
+        """
+        return self._required_apt_repositories
 
     @property
     def required_apt_packages(self):
