@@ -8,6 +8,7 @@ import os
 import os.path
 import pipes
 import socket
+import threading
 import time
 
 from boto.ec2.instance import Instance as EC2Instance
@@ -91,15 +92,14 @@ class Instance(LoggerProviderMixin):
         self.app = app
         self.instance = instance
         self.login = login
-        self.depth = 0
-        self.sftp_depth = 0
+        self.local = threading.local()
 
     def __enter__(self):
-        self.depth += 1
-        if self.depth < 2:
+        self.local.depth = getattr(self.local, 'depth', 0) + 1
+        if self.local.depth < 2:
             self.wait_state()
-            self.client = SSHClient()
-            self.client.set_missing_host_key_policy(AutoAddPolicy())
+            self.local.client = SSHClient()
+            self.local.client.set_missing_host_key_policy(AutoAddPolicy())
             trial = 1
             logger = self.get_logger()
             while 1:
@@ -108,9 +108,11 @@ class Instance(LoggerProviderMixin):
                                 self.login,
                                 self.instance.public_dns_name,
                                 trial)
-                    self.client.connect(self.instance.public_dns_name,
-                                        username=self.login,
-                                        pkey=self.app.private_key)
+                    self.local.client.connect(
+                        self.instance.public_dns_name,
+                        username=self.login,
+                        pkey=self.app.private_key
+                    )
                 except socket.error as e:
                     if 60 <= e.errno <= 61 and trial <= 20:
                         time.sleep(3)
@@ -120,14 +122,14 @@ class Instance(LoggerProviderMixin):
                     raise
                 else:
                     break
-        return self.client
+        return self.local.client
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.depth -= 1
-        if not self.depth:
-            self.client.close()
+        self.local.depth = self.local.depth - 1
+        if not self.local.depth:
+            self.local.client.close()
             self.get_logger().info('connection closed')
-            del self.client
+            del self.local.client
 
     def wait_state(self, state='running', timeout=60, tick=5):
         """Waits until the instance state becomes to the given
@@ -250,13 +252,14 @@ class Instance(LoggerProviderMixin):
 
         """
         with self as client:
-            if not self.sftp_depth:
-                self.sftp_client = client.open_sftp()
-            self.sftp_depth += 1
-            yield self.sftp_client
-            self.sftp_depth -= 1
-            if not self.sftp_depth:
-                self.sftp_client.close()
+            depth = getattr(self.local, 'sftp_depth', 0)
+            if not depth:
+                self.local.sftp_client = client.open_sftp()
+            self.local.sftp_depth = depth + 1
+            yield self.local.sftp_client
+            self.local.sftp_depth -= 1
+            if not self.local.sftp_depth:
+                self.local.sftp_client.close()
 
     @contextlib.contextmanager
     def open_file(self, path, mode='r'):

@@ -11,6 +11,7 @@ import re
 import shutil
 import sys
 import tempfile
+import threading
 
 from pkg_resources import resource_string
 from setuptools.sandbox import run_setup
@@ -22,6 +23,9 @@ from .instance import Instance
 from .logger import LoggerProviderMixin
 
 __all__ = 'Build', 'UTC', 'capture_stdout'
+
+
+capture_stdout_lock = threading.Lock()
 
 
 @contextlib.contextmanager
@@ -37,10 +41,11 @@ def capture_stdout():
             result = out.getvalue()
 
     """
-    stdout = sys.stdout
-    sys.stdout = io.BytesIO()
-    yield sys.stdout
-    sys.stdout = stdout
+    with capture_stdout_lock:
+        stdout = sys.stdout
+        sys.stdout = io.BytesIO()
+        yield sys.stdout
+        sys.stdout = stdout
 
 
 class Build(LoggerProviderMixin):
@@ -149,55 +154,46 @@ class Build(LoggerProviderMixin):
         into the :attr:`instance`.
 
         """
-        fd, package_path = tempfile.mkstemp()
-        os.close(fd)
-        with self.commit.download() as download_path:
-            services = list(self.services)
-            config_temp_path = tempfile.mkdtemp()
-            shutil.copytree(
-                os.path.join(download_path, self.app.config_dir),
-                os.path.join(config_temp_path, self.app.name)
-            )
-            with self.archive_package() as (package, filename, temp_path):
-                shutil.copyfile(temp_path, package_path)
-                remote_path = os.path.join('/tmp', filename)
-        with self.instance:
-            sudo = self.instance.sudo
-            def aptitude(*commands):
-                sudo(['aptitude', '-y'] + list(commands),
-                     environ={'DEBIAN_FRONTEND': 'noninteractive'})
-            # create user for app
-            sudo(['useradd', '-U', '-G', 'users,www-data', '-Mr',
-                  self.app.name])
-            # assume instance uses Ubuntu >= 12.04
-            apt_sources = re.sub(
-                '\n#\s*(deb(?:-src)?\s+http://[^.]\.ec2\.archive\.ubuntu\.com/'
-                'ubuntu/\s+[^-]+multiverse\n)',
-                lambda m: '\n' + m.group(1),
-                self.instance.read_file('/etc/apt/sources.list', sudo=True)
-            )
-            self.instance.write_file('/etc/apt/sources.list', apt_sources,
-                                     sudo=True)
-            apt_repos = set()
-            apt_packages = set([
-                'build-essential', 'python-dev', 'python-setuptools'
-            ])
-            python_packages = set()
-            for service in services:
-                apt_repos.update(service.required_apt_repositories)
-                apt_packages.update(service.required_apt_packages)
-                python_packages.update(service.required_python_packages)
-            if apt_repos:
-                for repo in apt_repos:
-                    sudo(['apt-add-repository', '-y', repo])
-                aptitude('update')
-            with self.instance.sftp():
-                self.instance.write_file(
-                    '/usr/bin/apt-fast',
-                    resource_string(__name__, 'apt-fast'),
-                    sudo=True
+        sudo = self.instance.sudo
+        def setup_instance(service_manifests, service_manifests_available):
+            with self.instance:
+                def aptitude(*commands):
+                    sudo(['aptitude', '-y'] + list(commands),
+                         environ={'DEBIAN_FRONTEND': 'noninteractive'})
+                # create user for app
+                sudo(['useradd', '-U', '-G', 'users,www-data', '-Mr',
+                      self.app.name])
+                # assume instance uses Ubuntu >= 12.04
+                apt_sources = re.sub(
+                    r'\n#\s*(deb(?:-src)?\s+'
+                    r'http://[^.]\.ec2\.archive\.ubuntu\.com/'
+                    r'ubuntu/\s+[^-]+multiverse\n)',
+                    lambda m: '\n' + m.group(1),
+                    self.instance.read_file('/etc/apt/sources.list', sudo=True)
                 )
-                self.instance.write_file('/etc/apt-fast.conf', '''
+                self.instance.write_file('/etc/apt/sources.list', apt_sources,
+                                         sudo=True)
+                apt_repos = set()
+                apt_packages = set([
+                    'build-essential', 'python-dev', 'python-setuptools'
+                ])
+                with service_manifests_available:
+                    while not service_manifests[0]:
+                        service_manifests_available.wait()
+                for service in service_manifests[1:]:
+                    apt_repos.update(service.required_apt_repositories)
+                    apt_packages.update(service.required_apt_packages)
+                if apt_repos:
+                    for repo in apt_repos:
+                        sudo(['apt-add-repository', '-y', repo])
+                    aptitude('update')
+                with self.instance.sftp():
+                    self.instance.write_file(
+                        '/usr/bin/apt-fast',
+                        resource_string(__name__, 'apt-fast'),
+                        sudo=True
+                    )
+                    self.instance.write_file('/etc/apt-fast.conf', '''
 _APTMGR=aptitude
 DOWNLOADBEFORE=true
 _MAXNUM=10
@@ -206,34 +202,63 @@ _DOWNLOADER='aria2c -c -j ${_MAXNUM} -i ${DLLIST} --connect-timeout=10 \
              --timeout=600 -m0'
 DLDIR='/var/cache/apt/archives/apt-fast'
 APTCACHE='/var/cache/apt/archives/'
-                ''', sudo=True)
-            sudo(['chmod', '+x', '/usr/bin/apt-fast'])
-            aptitude('install', 'aria2')
-            sudo(['apt-fast', '-q', '-y', 'install'] + list(apt_packages),
-                 environ={'DEBIAN_FRONTEND': 'noninteractive'})
-            with self.instance.sftp():
-                # uploads package
-                self.instance.put_file(package_path, remote_path)
-                # crate.io is way faster than official PyPI mirros
-                index_url = 'https://pypi.crate.io/simple/'
-                sudo(['easy_install', '--index-url=' + index_url,
-                      remote_path] + list(python_packages),
-                     environ={'CI': '1'})
-                # remove package
-                self.instance.remove_file(remote_path)
-                # upload config files
-                self.instance.put_directory(
-                    os.path.join(config_temp_path, self.app.name),
-                    '/etc/' + self.app.name,
-                    sudo=True
-                )
+                    ''', sudo=True)
+                sudo(['chmod', '+x', '/usr/bin/apt-fast'])
+                aptitude('install', 'aria2')
+                sudo(['apt-fast', '-q', '-y', 'install'] + list(apt_packages),
+                     environ={'DEBIAN_FRONTEND': 'noninteractive'})
+        service_manifests_available = threading.Condition()
+        service_manifests = [False]
+        instance_setup_worker = threading.Thread(
+            target=setup_instance,
+            kwargs={
+                'service_manifests_available': service_manifests_available,
+                'service_manifests': service_manifests
+            }
+        )
+        instance_setup_worker.start()
+        fd, package_path = tempfile.mkstemp()
+        os.close(fd)
+        with self.commit.download() as download_path:
+            service_manifests.extend(self.services)
+            service_manifests[0] = True
+            with service_manifests_available:
+                service_manifests_available.notify()
+            config_temp_path = tempfile.mkdtemp()
+            shutil.copytree(
+                os.path.join(download_path, self.app.config_dir),
+                os.path.join(config_temp_path, self.app.name)
+            )
+            with self.archive_package() as (package, filename, temp_path):
+                shutil.copyfile(temp_path, package_path)
+                remote_path = os.path.join('/tmp', filename)
+        with self.instance.sftp():
+            # upload config files
+            self.instance.put_directory(
+                os.path.join(config_temp_path, self.app.name),
+                '/etc/' + self.app.name,
+                sudo=True
+            )
             shutil.rmtree(config_temp_path)
-            for service in services:
+            python_packages = set()
+            for service in service_manifests[1:]:
+                python_packages.update(service.required_python_packages)
+            # uploads package
+            self.instance.put_file(package_path, remote_path)
+            # join instance_setup_worker
+            instance_setup_worker.join()
+            # crate.io is way faster than official PyPI mirros
+            index_url = 'https://pypi.crate.io/simple/'
+            sudo(['easy_install', '-i', index_url, remote_path] +
+                 list(python_packages), environ={'CI': '1'})
+            # remove package
+            ###########self.instance.remove_file(remote_path)
+            for service in service_manifests[1:]:
                 for cmd in service.pre_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
-            for service in services:
+            for service in service_manifests[1:]:
                 service.install(self.instance)
-            for service in services:
+            for service in service_manifests[1:]:
                 for cmd in service.post_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
 
