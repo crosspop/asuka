@@ -142,3 +142,7 @@ class Service(object):
                 '/etc/{0}'.format(*F), '/var/lib/{0}'.format(*F),
                 '/var/run/{0}'.format(*F)
             ])
+
+    def __repr__(self):
+        cls = type(self)
+        return '<{0.__module__}.{0.__name__} {1!r}>'.format(cls, self.name)
