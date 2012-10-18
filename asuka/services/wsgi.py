@@ -187,7 +187,8 @@ class MeinheldWorker(Worker):
 
     @property
     def required_apt_packages(self):
-        return frozenset(['build-essential', 'python-dev', 'python-greenlet'])
+        return frozenset(['build-essential', 'python-dev', 'python-greenlet',
+                          'python-greenlet-dev'])
 
     @property
     def required_python_packages(self):
