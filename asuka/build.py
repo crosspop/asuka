@@ -2,51 +2,24 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
-import contextlib
-import datetime
-import io
 import os
 import os.path
 import re
 import shutil
-import sys
 import tempfile
 import threading
 
 from boto.route53.record import ResourceRecordSets
 from pkg_resources import resource_string
-from setuptools.sandbox import run_setup
 from werkzeug.utils import import_string
 from yaml import load
 
 from .commit import Commit
+from .dist import PYPI_INDEX_URL, Dist
 from .instance import Instance
 from .logger import LoggerProviderMixin
 
-__all__ = 'Build', 'UTC', 'capture_stdout'
-
-
-capture_stdout_lock = threading.Lock()
-
-
-@contextlib.contextmanager
-def capture_stdout():
-    """Captures the standard output (it will get silent) and yields
-    the buffer.
-    
-    For example, the following prints nothing to console but
-    ``result`` becomes ``'yeah'``::
-
-        with capture_output() as out:
-            print 'yeah'
-            result = out.getvalue()
-
-    """
-    with capture_stdout_lock:
-        stdout = sys.stdout
-        sys.stdout = io.BytesIO()
-        yield sys.stdout
-        sys.stdout = stdout
+__all__ = 'Build',
 
 
 class Build(LoggerProviderMixin):
@@ -66,8 +39,11 @@ class Build(LoggerProviderMixin):
     #: (:class:`~asuka.app.App`) The application object.
     app = None
 
-    #: (:class:`~asuka.commit.Commit`) The commit of the build
+    #: (:class:`~asuka.commit.Commit`) The commit of the build.
     commit = None
+
+    #: (:class:`~asuka.dist.Dist`) The package distribution object.
+    dist = None
 
     #: (:class:`~asuka.instance.Instance`) The instance the build
     #: is/will be done.
@@ -83,6 +59,7 @@ class Build(LoggerProviderMixin):
         self.app = commit.app
         self.commit = commit
         self.instance = instance
+        self.dist = Dist(commit)
 
     @property
     def services(self):
@@ -118,38 +95,6 @@ class Build(LoggerProviderMixin):
                     raise type(e)(name + ': ' + str(e))
                 yield service
 
-    @contextlib.contextmanager
-    def archive_package(self):
-        """Downloads the source tree and makes the source distribution.
-        It yields triple of package name, filename of the source
-        distribution, and its full path. ::
-
-            with build.archive_package() as (package, filename, path):
-                sftp.put(path, filename)
-
-        """
-        with self.commit.download() as path:
-            setup_script = os.path.join(path, 'setup.py')
-            if not os.path.isfile(setup_script):
-                raise IOError('cannot found setup.py script in the source '
-                              'tree {0!r}'.format(self.commit))
-            tag = '.{0}.{1:%Y%m%d%H%M%S}.{2!s:.7}'.format(
-                'master', # FIXME: it should be parameterized
-                self.commit.committed_at.astimezone(UTC()),
-                self.commit
-            )
-            with capture_stdout() as buffer_:
-                run_setup(setup_script, ['--fullname'])
-                fullname = buffer_.getvalue().rstrip().splitlines()[-1]
-            package_name = fullname + tag
-            run_setup(setup_script, [
-                'egg_info', '--tag-build', tag,
-                'sdist', '--formats=bztar'
-            ])
-            filename = package_name + '.tar.bz2'
-            filepath = os.path.join(path, 'dist', filename)
-            yield package_name, filename, filepath
-
     def install(self):
         """Installs the build and required :attr:`services`
         into the :attr:`instance`.
@@ -177,7 +122,8 @@ class Build(LoggerProviderMixin):
                                          sudo=True)
                 apt_repos = set()
                 apt_packages = set([
-                    'build-essential', 'python-dev', 'python-setuptools'
+                    'build-essential', 'python-dev', 'python-setuptools',
+                    'python-pip'
                 ])
                 with service_manifests_available:
                     while not service_manifests[0]:
@@ -231,7 +177,7 @@ APTCACHE='/var/cache/apt/archives/'
                 os.path.join(download_path, self.app.config_dir),
                 os.path.join(config_temp_path, self.app.name)
             )
-            with self.archive_package() as (package, filename, temp_path):
+            with self.dist.bundle_package() as (package, filename, temp_path):
                 shutil.copyfile(temp_path, package_path)
                 remote_path = os.path.join('/tmp', filename)
         with self.instance.sftp():
@@ -250,8 +196,7 @@ APTCACHE='/var/cache/apt/archives/'
             # join instance_setup_worker
             instance_setup_worker.join()
             # crate.io is way faster than official PyPI mirros
-            index_url = 'https://pypi.crate.io/simple/'
-            sudo(['easy_install', '-i', index_url, remote_path] +
+            sudo(['pip', 'install', '-i', PYPI_INDEX_URL, remote_path] +
                  list(python_packages), environ={'CI': '1'})
             # remove package
             self.instance.remove_file(remote_path)
@@ -288,16 +233,3 @@ APTCACHE='/var/cache/apt/archives/'
         c = type(self)
         return '<{0}.{1} {2} {3}>'.format(c.__module__, c.__name__,
                                           self.app.name, self.commit.ref)
-
-
-class UTC(datetime.tzinfo):
-    """UTC"""
-
-    def utcoffset(self, value):
-        return datetime.timedelta(0)
-
-    def tzname(self, value):
-        return 'UTC'
-
-    def dst(self, value):
-        return datetime.timedelta(0)

@@ -17,7 +17,8 @@ from asuka.version import VERSION
 
 install_requires = [
     'boto == 2.6.0', 'distribute', 'github3.py == 0.1a8', 'iso8601 == 0.1.4',
-    'paramiko == 1.7.7.2', 'PyYAML == 3.10', 'Werkzeug == 0.8.3'
+    'paramiko == 1.7.7.2', 'pip == 1.2.1', 'PyYAML == 3.10',
+    'Werkzeug == 0.8.3'
 ]
 
 

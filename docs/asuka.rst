@@ -8,6 +8,7 @@
       asuka/build
       asuka/commit
       asuka/config
+      asuka/dist
       asuka/instance
       asuka/logger
       asuka/service
