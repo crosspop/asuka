@@ -198,7 +198,7 @@ class Build(LoggerProviderMixin):
                     self.instance.write_file('/etc/apt-fast.conf', '''
 _APTMGR=aptitude
 DOWNLOADBEFORE=true
-_MAXNUM=10
+_MAXNUM=20
 DLLIST='/tmp/apt-fast.list'
 _DOWNLOADER='aria2c -c -j ${_MAXNUM} -i ${DLLIST} --connect-timeout=10 \
              --timeout=600 -m0'
