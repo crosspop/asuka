@@ -47,7 +47,7 @@
           <a href="logger.html" title="asuka.logger — Utilities for using logging"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -59,16 +59,43 @@
   <span class="target" id="module-asuka.service"></span><div class="section" id="asuka-service-service-interface">
 <h1><a class="reference internal" href="#module-asuka.service" title="asuka.service"><tt class="xref py py-mod docutils literal"><span class="pre">asuka.service</span></tt></a> &#8212; Service interface<a class="headerlink" href="#asuka-service-service-interface" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
+<dt id="asuka.service.DomainService">
+<em class="property">class </em><tt class="descclassname">asuka.service.</tt><tt class="descname">DomainService</tt><big>(</big><em>build</em>, <em>name</em>, <em>config={}</em>, <em>required_apt_repositories=frozenset([])</em>, <em>required_apt_packages=frozenset([])</em>, <em>required_python_packages=frozenset([])</em>, <em>pre_install=</em><span class="optional">[</span><span class="optional">]</span>, <em>post_install=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#asuka.service.DomainService" title="Permalink to this definition">¶</a></dt>
+<dd><p>The service subtype mixin which provides domain routing.</p>
+<dl class="method">
+<dt id="asuka.service.DomainService.route_domain">
+<tt class="descname">route_domain</tt><big>(</big><em>name</em>, <em>records</em><big>)</big><a class="headerlink" href="#asuka.service.DomainService.route_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routes the service to the zone.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the full domain name to map</li>
+<li><strong>records</strong> (<a class="reference external" href="http://docs.pythonboto.org/en/latest/ref/route53.html#boto.route53.record.ResourceRecordSets" title="(in boto v2.6.0-dev)"><tt class="xref py py-class docutils literal"><span class="pre">boto.route53.record.ResourceRecordSets</span></tt></a>) &#8211; the record changeset</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="asuka.service.Service">
-<em class="property">class </em><tt class="descclassname">asuka.service.</tt><tt class="descname">Service</tt><big>(</big><em>name</em>, <em>config={}</em>, <em>required_apt_packages=frozenset([])</em>, <em>required_python_packages=frozenset([])</em><big>)</big><a class="headerlink" href="#asuka.service.Service" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">asuka.service.</tt><tt class="descname">Service</tt><big>(</big><em>build</em>, <em>name</em>, <em>config={}</em>, <em>required_apt_repositories=frozenset([])</em>, <em>required_apt_packages=frozenset([])</em>, <em>required_python_packages=frozenset([])</em>, <em>pre_install=</em><span class="optional">[</span><span class="optional">]</span>, <em>post_install=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#asuka.service.Service" title="Permalink to this definition">¶</a></dt>
 <dd><p>The inteface of services.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>app</strong> (<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) &#8211; the application object</li>
 <li><strong>name</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the service name</li>
 <li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; the config mapping object</li>
+<li><strong>required_apt_repositories</strong> &#8211; the set of APT repositories
+the service uses</li>
 <li><strong>required_apt_packages</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Set" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt></a>) &#8211; the set of APT packages
 the service depends</li>
 <li><strong>required_python_packages</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Set" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt></a>) &#8211; the set of Python packages
@@ -81,8 +108,32 @@ elements have to be PyPI names</li>
 </table>
 <dl class="attribute">
 <dt id="asuka.service.Service.NAME_PATTERN">
-<tt class="descname">NAME_PATTERN</tt><em class="property"> = &lt;SRE_Pattern object at 0x000000010791a220&gt;</em><a class="headerlink" href="#asuka.service.Service.NAME_PATTERN" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">NAME_PATTERN</tt><em class="property"> = &lt;SRE_Pattern object at 0x0000000106858ca0&gt;</em><a class="headerlink" href="#asuka.service.Service.NAME_PATTERN" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="http://docs.python.org/library/re.html#re.RegexObject" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">re.RegexObject</span></tt></a>) The pattern of the valid service name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.app">
+<tt class="descname">app</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.app" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) The application object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.build">
+<tt class="descname">build</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="build.html#asuka.build.Build" title="asuka.build.Build"><tt class="xref py py-class docutils literal"><span class="pre">Build</span></tt></a>) The build object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.commit">
+<tt class="descname">commit</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="commit.html#asuka.commit.Commit" title="asuka.commit.Commit"><tt class="xref py py-class docutils literal"><span class="pre">Commit</span></tt></a>) The commit object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.config">
+<tt class="descname">config</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) The configuration dictionary.</p>
 </dd></dl>
 
 <dl class="method">
@@ -100,10 +151,47 @@ elements have to be PyPI names</li>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="asuka.service.Service.name">
+<tt class="descname">name</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) The service name e.g. <tt class="docutils literal"><span class="pre">'web'</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.post_install">
+<tt class="descname">post_install</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.post_install" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) The shell commands to be invoked
+after all services are installed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.pre_install">
+<tt class="descname">pre_install</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.pre_install" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) The shell commands to be invoked
+before services are installed.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="asuka.service.Service.required_apt_packages">
 <tt class="descname">required_apt_packages</tt><a class="headerlink" href="#asuka.service.Service.required_apt_packages" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Set" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt></a>) The set of APT package names
 to install e.g. <tt class="docutils literal"><span class="pre">frozenset(['python-dev',</span> <span class="pre">'python-greenlet'])</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.required_apt_repositories">
+<tt class="descname">required_apt_repositories</tt><a class="headerlink" href="#asuka.service.Service.required_apt_repositories" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Set" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt></a>) The set of APT repository source lines
+to add.  It takes source lines <strong class="program">apt-add-repository</strong>
+can take e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">frozenset</span><span class="p">([</span>
+    <span class="s">&#39;deb http://myserver/path/to/repo stable myrepo&#39;</span><span class="p">,</span>
+    <span class="s">&#39;http://myserver/path/to/repo myrepo&#39;</span><span class="p">,</span>
+    <span class="s">&#39;https://packages.medibuntu.org free non-free&#39;</span><span class="p">,</span>
+    <span class="s">&#39;http://extras.ubuntu.com/ubuntu &#39;</span><span class="p">,</span>
+    <span class="s">&#39;ppa:user/repository&#39;</span>
+<span class="p">])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="attribute">
@@ -125,7 +213,7 @@ to install e.g. <tt class="docutils literal"><span class="pre">frozenset(['Werkz
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="logger.html"
-                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.logger</span></tt> &#8212; Utilities for using <tt class="docutils literal docutils literal docutils literal"><span class="pre">logging</span></tt></a></p>
+                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">asuka.logger</span></tt> &#8212; Utilities for using <tt class="docutils literal docutils literal"><span class="pre">logging</span></tt></a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="services.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">asuka.services</span></tt> &#8212; Service implementations</a></p>
@@ -167,7 +255,7 @@ to install e.g. <tt class="docutils literal"><span class="pre">frozenset(['Werkz
           <a href="logger.html" title="asuka.logger — Utilities for using logging"
              >previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
