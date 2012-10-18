@@ -13,6 +13,7 @@ import sys
 import tempfile
 import threading
 
+from boto.route53.record import ResourceRecordSets
 from pkg_resources import resource_string
 from setuptools.sandbox import run_setup
 from werkzeug.utils import import_string
@@ -154,6 +155,7 @@ class Build(LoggerProviderMixin):
         into the :attr:`instance`.
 
         """
+        logger = self.get_logger('install')
         sudo = self.instance.sudo
         def setup_instance(service_manifests, service_manifests_available):
             with self.instance:
@@ -261,6 +263,26 @@ APTCACHE='/var/cache/apt/archives/'
             for service in service_manifests[1:]:
                 for cmd in service.post_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
+        service_map = dict((service.name, service)
+                           for service in service_manifests[1:])
+        if self.app.route53_hosted_zone_id and self.app.route53_records:
+            changeset = ResourceRecordSets(
+                self.app.route53_connection,
+                self.app.route53_hosted_zone_id,
+                'Changed by Asuka: {0}, {1}'.format(self.app.name,
+                                                    self.commit.ref)
+            )
+            from .service import DomainService
+            for service_name, domain_format in self.app.route53_records.items():
+                service = service_map[service_name]
+                if not isinstance(service, DomainService):
+                    raise TypeError(repr(service) + 'is not an instance of '
+                                    'crosspop.service.DomainService')
+                domain = domain_format.format(feature='branch-master') # FIXME
+                service.route_domain(domain, changeset)
+            if changeset.changes:
+                logger.info('Route 53 changeset:\n%s', changeset.to_xml())
+                changeset.commit()
 
     def __repr__(self):
         c = type(self)

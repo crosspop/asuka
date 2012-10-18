@@ -7,7 +7,7 @@ import re
 from .build import Build
 from .instance import Instance
 
-__all__ = 'Service',
+__all__ = 'DomainService', 'Service'
 
 
 class Service(object):
@@ -146,3 +146,17 @@ class Service(object):
     def __repr__(self):
         cls = type(self)
         return '<{0.__module__}.{0.__name__} {1!r}>'.format(cls, self.name)
+
+
+class DomainService(Service):
+    """The service subtype mixin which provides domain routing."""
+
+    def route_domain(self, name, records):
+        """Routes the service to the zone.
+
+        :param name: the full domain name to map
+        :type name: :class:`basestring`
+        :param records: the record changeset
+        :type records: :class:`boto.route53.record.ResourceRecordSets`
+
+        """

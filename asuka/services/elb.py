@@ -11,10 +11,12 @@ from boto.ec2.elb import ELBConnection, HealthCheck, regions
 from boto.exception import BotoServerError
 from werkzeug.utils import cached_property
 
-from ..service import Service
+from ..service import DomainService
+
+__all__ = 'ELBService',
 
 
-class ELBService(Service):
+class ELBService(DomainService):
     """Elastic Load Balancing."""
 
     def __init__(self, *args, **kwargs):
@@ -72,13 +74,13 @@ class ELBService(Service):
             balancers = conn.get_all_load_balancers([self.load_balancer_name])
         except BotoServerError:
             zones = self.app.ec2_connection.get_all_zones()
-            lb = conn.create_load_balancer(
+            conn.create_load_balancer(
                 name=self.load_balancer_name,
                 zones=[zone.name for zone in zones],
                 listeners=self.listeners
             )
-        else:
-            lb = balancers[0]
+            balancers = conn.get_all_load_balancers([self.load_balancer_name])
+        lb = balancers[0]
         lb.configure_health_check(self.health_check)
         return lb
 
@@ -126,3 +128,69 @@ end script
         instance.sudo([
             'service', instance.app.name + '-' + self.name, 'start'
         ])
+
+    def route_domain(self, name, records):
+        dns_name = self.load_balancer.dns_name
+        assert dns_name is not None
+        if not dns_name.endswith('.'):
+            dns_name += '.'
+        zone_id = self.app.route53_hosted_zone_id
+        zone = records.connection.get_hosted_zone(zone_id)
+        topname = zone['GetHostedZoneResponse']['HostedZone']['Name']
+        get_list = records.connection.get_all_rrsets
+        if topname == name:
+            hosted_zone_id = self.load_balancer.canonical_hosted_zone_name_id
+            assert hosted_zone_id is not None
+            goals = [('A', dns_name), ('AAAA', 'ipv6.' + dns_name)]
+            for type_, dns_name in goals:
+                skip = False
+                for record in get_list(zone_id, type_, name):
+                    if record.type == type_ and record.name == name:
+                        if (record.alias_hosted_zone_id == hosted_zone_id and
+                            record.alias_dns_name == dns_name):
+                            # already exists; skip
+                            skip = True
+                            break
+                        # already exists; delete
+                        delete = records.add_change(
+                            'DELETE',
+                            name=record.name,
+                            type=record.type,
+                            ttl=record.ttl,
+                            alias_hosted_zone_id=hosted_zone_id,
+                            alias_dns_name=dns_name,
+                            identifier=record.identifier,
+                            weight=record.weight,
+                            region=record.region
+                        )
+                        delete.resource_records = record.resource_records
+                        break
+                if not skip:
+                    records.add_change(
+                        action='CREATE',
+                        name=name,
+                        type=type_,
+                        alias_hosted_zone_id=hosted_zone_id,
+                        alias_dns_name=dns_name
+                    )
+        else:
+            dns_name = 'dualstack.' + dns_name
+            for record in get_list(zone_id, 'CNAME', name):
+                if record.type == 'CNAME' and record.name == name:
+                    if record.resource_records == [dns_name]:
+                        # already exists; skip
+                        return
+                    # already exists but not matched; delete first
+                    delete = records.add_change(
+                        'DELETE',
+                        name=record.name,
+                        type=record.type,
+                        ttl=record.ttl,
+                        identifier=record.identifier,
+                        weight=record.weight,
+                        region=record.region
+                    )
+                    delete.resource_records = record.resource_records
+                    break
+            record = records.add_change('CREATE', name, 'CNAME')
+            record.add_value(dns_name)

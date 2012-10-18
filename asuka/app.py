@@ -5,9 +5,11 @@
 import io
 
 from boto.ec2.connection import EC2Connection
+from boto.route53.connection import Route53Connection
 from github3.repos import Repository
 from paramiko.pkey import PKey
 from paramiko.rsakey import RSAKey
+from werkzeug.utils import cached_property
 
 __all__ = 'App',
 
@@ -31,6 +33,14 @@ class App(object):
     #: (:class:`basestring`) The name of the Asuka configuration directory
     #: in the repository.  The default uses :file:`asuka/`.
     config_dir = 'asuka/'
+
+    #: (:class:`str`) The Route 53 hosted zone ID.
+    route53_hosted_zone_id = None
+
+    #: (:class:`collections.Mapping`) The map of service names and their
+    #: mapped domain name format strings
+    #: e.g. ``{'web': '{feature:branch-,pull-}.test.example.com.'}``.
+    route53_records = {}
 
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
@@ -145,6 +155,23 @@ class App(object):
                 break
             else:
                 repos.create_key(self.key_name, self.public_key_string)
+
+    @cached_property
+    def route53_connection(self):
+        """(:class:`boto.route53.connection.Route53Connection`)
+        The Route 53 connection.
+
+        """
+        ec2 = self.ec2_connection
+        return Route53Connection(
+            aws_access_key_id=ec2.provider.access_key,
+            aws_secret_access_key=ec2.provider.secret_key,
+            port=ec2.port,
+            proxy=ec2.proxy, proxy_port=ec2.proxy_port,
+            debug=ec2.debug,
+            security_token=ec2.provider.security_token,
+            validate_certs=ec2.https_validate_certificates
+        )
 
     def __repr__(self):
         c = type(self)
