@@ -6,6 +6,7 @@ import io
 
 from boto.ec2.connection import EC2Connection
 from boto.route53.connection import Route53Connection
+from github3.github import GitHub
 from github3.repos import Repository
 from paramiko.pkey import PKey
 from paramiko.rsakey import RSAKey
@@ -118,13 +119,15 @@ class App(object):
         """(:class:`basestring`) The human-readable title of the key pair."""
         return self.KEY_PAIR_NAME_FORMAT.format(app=self)
 
-    @property
+    @cached_property
     def github(self):
         """(:class:`github3.GitHub <github3.github.GitHub>`) The GitHub
         connection.
 
         """
-        return self.repository._session
+        gh = GitHub()
+        gh._session = self.repository._session
+        return gh
 
     @property
     def repository(self):
