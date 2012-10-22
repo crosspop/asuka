@@ -5,6 +5,7 @@
       :maxdepth: 2
 
       asuka/app
+      asuka/branch
       asuka/build
       asuka/commit
       asuka/config

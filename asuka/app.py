@@ -3,6 +3,7 @@
 
 """
 import io
+import re
 
 from boto.ec2.connection import EC2Connection
 from boto.route53.connection import Route53Connection
@@ -158,6 +159,31 @@ class App(object):
                 break
             else:
                 repos.create_key(self.key_name, self.public_key_string)
+
+    def get_clone_url(self, repository=None):
+        """Makes an authenticated clone url of the GitHub repository.
+
+        :param repository: the repository to clone.
+                           default is :attr:`repository`
+        :type repository: :class:`github3.repos.Repository`
+        :returns: the clone url
+        :rtype: :class:`basestring`
+
+        """
+        if repository is None:
+            repository = self.repository
+        url = repository.clone_url
+        session = self.github._session
+        if session.auth:
+            token = ':'.join(session.auth)
+        else:
+            auth = session.headers['Authorization']
+            _, token = auth.split(' ', 1)
+        return re.sub(
+            r'^https?://',
+            lambda m: m.group(0) + token + '@',
+            url
+        )
 
     @cached_property
     def route53_connection(self):

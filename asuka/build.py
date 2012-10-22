@@ -2,6 +2,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+import contextlib
 import os
 import os.path
 import re
@@ -14,6 +15,7 @@ from pkg_resources import resource_string
 from werkzeug.utils import import_string
 from yaml import load
 
+from .branch import Branch
 from .commit import Commit
 from .dist import PYPI_INDEX_URL, Dist
 from .instance import Instance
@@ -39,6 +41,10 @@ class Build(LoggerProviderMixin):
     #: (:class:`~asuka.app.App`) The application object.
     app = None
 
+    #: (:class:`~asuka.branch.Branch`) The branch of the commit.
+    #: It could be a pull request as well.
+    branch = None
+
     #: (:class:`~asuka.commit.Commit`) The commit of the build.
     commit = None
 
@@ -49,17 +55,37 @@ class Build(LoggerProviderMixin):
     #: is/will be done.
     instance = None
 
-    def __init__(self, commit, instance):
-        if not isinstance(commit, Commit):
+    def __init__(self, branch, commit, instance):
+        if not isinstance(branch, Branch):
+            raise TypeError('branch must be an instance of asuka.branch.'
+                            'Branch, not ' + repr(branch))
+        elif not isinstance(commit, Commit):
             raise TypeError('commit must be an instance of asuka.commit.'
                             'Commit, not ' + repr(commit))
         elif not isinstance(instance, Instance):
             raise TypeError('expected an instance of asuka.instance.'
                             'Instance, not ' + repr(instance))
-        self.app = commit.app
+        elif not (branch.app is commit.app is instance.app):
+            raise TypeError('{0!r}, {1!r} and {2!r} are not compatible for '
+                            'each other; their applications differ: '
+                            '{0.app!r}, {1.app!r}, and {2.app!r} '
+                            'respectively'.format(branch, commit, instance))
+        self.app = branch.app
+        self.branch = branch
         self.commit = commit
         self.instance = instance
-        self.dist = Dist(commit)
+        self.dist = Dist(branch, commit)
+
+    @contextlib.contextmanager
+    def fetch(self):
+        """The shortcut of :meth:`Branch.fetch() <asuka.branch.Branch.fetch>`
+        method.  It's equivalent to::
+
+            build.branch.fetch(build.commit.ref)
+
+        """
+        with self.branch.fetch(self.commit.ref) as path:
+            yield path
 
     @property
     def services(self):
@@ -68,7 +94,7 @@ class Build(LoggerProviderMixin):
 
         """
         filename_re = self.SERVICE_FILENAME_PATTERN
-        with self.commit.download() as path:
+        with self.fetch() as path:
             config_dir = os.path.join(path, self.app.config_dir)
             if not os.path.isdir(config_dir):
                 return
@@ -167,7 +193,7 @@ APTCACHE='/var/cache/apt/archives/'
         instance_setup_worker.start()
         fd, package_path = tempfile.mkstemp()
         os.close(fd)
-        with self.commit.download() as download_path:
+        with self.fetch() as download_path:
             service_manifests.extend(self.services)
             service_manifests[0] = True
             with service_manifests_available:
@@ -223,7 +249,7 @@ APTCACHE='/var/cache/apt/archives/'
                 if not isinstance(service, DomainService):
                     raise TypeError(repr(service) + 'is not an instance of '
                                     'crosspop.service.DomainService')
-                domain = domain_format.format(feature='branch-master') # FIXME
+                domain = domain_format.format(branch=self.branch)
                 service.route_domain(domain, changeset)
             if changeset.changes:
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())

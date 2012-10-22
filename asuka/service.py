@@ -37,6 +37,9 @@ class Service(object):
     #: (:class:`~asuka.build.Build`) The build object.
     build = None
 
+    #: (:class:`~asuka.branch.Branch`) The branch object.
+    branch = None
+
     #: (:class:`~asuka.commit.Commit`) The commit object.
     commit = None
 
@@ -72,6 +75,7 @@ class Service(object):
             raise TypeError('invalid name: ' + repr(name))
         self.build = build
         self.app = build.app
+        self.branch = build.branch
         self.commit = build.commit
         self.name = str(name)
         self.config = dict(config)

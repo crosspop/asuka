@@ -2,13 +2,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
-import contextlib
-import os
-import os.path
 import re
-import shutil
-import tarfile
-import tempfile
 
 from iso8601 import parse_date
 from werkzeug.utils import cached_property
@@ -52,7 +46,6 @@ class Commit(LoggerProviderMixin):
         self.ref = str(ref)
         if len(self.ref) < 40:
             self.ref = self.repo_commit.sha
-        self.download_depth = 0
 
     @cached_property
     def repo_commit(self):
@@ -71,46 +64,6 @@ class Commit(LoggerProviderMixin):
 
         """
         return parse_date(self.git_commit.committer['date'])
-
-    @contextlib.contextmanager
-    def download(self):
-        """Downloads the source tree and yields the path of the tree
-        managed by context.
-
-        Usage::
-
-            import os.path
-
-            with ref.download() as tree_path:
-                with open(os.path.join(tree_path, 'setup.py')) as setup:
-                    setup_script = setup.read()
-
-        """
-        self.download_depth += 1
-        if self.download_depth > 1:
-            yield self.download_directory
-        else:
-            logger = self.get_logger('download')
-            fd, tempname = tempfile.mkstemp()
-            os.close(fd)
-            logger.debug('start download: %s', tempname)
-            self.app.repository.archive('tarball', tempname, self.ref)
-            logger.debug('finish download: %s', tempname)
-            path = tempfile.mkdtemp()
-            logger.debug('start extract: %s', path)
-            tar = tarfile.open(tempname)
-            tar.extractall(path)
-            root_name = tar.getnames()[0]
-            tar.close()
-            logger.debug('finish extract: %s', path)
-            os.unlink(tempname)
-            working_dir = os.path.join(path, root_name)
-            self.download_directory = working_dir
-            logger.debug('root path: %s', working_dir)
-            yield working_dir
-            shutil.rmtree(path)
-            logger.debug('directory removed: %s', path)
-        self.download_depth -= 1
 
     def __str__(self):
         return self.ref

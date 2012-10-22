@@ -9,4 +9,4 @@ repository:
   password: your-github-password
 route53_hosted_zone_id: your_route53_zone_id
 route53_records:
-  elb: "{feature}.test.example.com."
+  elb: "{branch.label}.test.example.com."

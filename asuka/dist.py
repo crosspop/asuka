@@ -19,6 +19,7 @@ from pip.vcs import vcs
 from pip.vcs.git import Git
 from setuptools.sandbox import run_setup
 
+from .branch import Branch
 from .commit import Commit
 from .logger import LoggerProviderMixin
 
@@ -58,13 +59,25 @@ class Dist(LoggerProviderMixin):
     #: (:class:`~asuka.app.App`) The application object.
     app = None
 
+    #: (:class:`~asuka.branch.Branch`) The branch of the commit.
+    #: It could be a pull request as well.
+    branch = None
+
     #: (:class:`~asuka.commit.Commit`) The commit object.
     commit = None
 
-    def __init__(self, commit):
-        if not isinstance(commit, Commit):
+    def __init__(self, branch, commit):
+        if not isinstance(branch, Branch):
+            raise TypeError('branch must be an instance of asuka.branch.'
+                            'Branch, not ' + repr(branch))
+        elif not isinstance(commit, Commit):
             raise TypeError('commit must be an instance of asuka.commit.'
                             'Commit, not ' + repr(commit))
+        elif branch.app is not commit.app:
+            raise TypeError('{0!r} and {1!r} are not compatible for each '
+                            'other; their applications differ: {0.app!r} and '
+                            '{1.app!r} respectively'.format(branch, commit))
+        self.branch = branch
         self.commit = commit
         self.app = commit.app
 
@@ -78,14 +91,13 @@ class Dist(LoggerProviderMixin):
                 sftp.put(path, filename)
 
         """
-        logger = self.get_logger('archive_package')
-        with self.commit.download() as path:
+        with self.branch.fetch(self.commit.ref) as path:
             setup_script = os.path.join(path, 'setup.py')
             if not os.path.isfile(setup_script):
                 raise IOError('cannot found setup.py script in the source '
                               'tree {0!r}'.format(self.commit))
             tag = '.{0}.{1:%Y%m%d%H%M%S}.{2!s:.7}'.format(
-                'master', # FIXME: it should be parameterized
+                self.branch.label,
                 self.commit.committed_at.astimezone(UTC()),
                 self.commit
             )
