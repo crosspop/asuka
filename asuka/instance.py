@@ -10,6 +10,7 @@ import pipes
 import socket
 import threading
 import time
+import weakref
 
 from boto.ec2.instance import Instance as EC2Instance
 from paramiko.client import AutoAddPolicy, SSHClient
@@ -17,7 +18,7 @@ from werkzeug.datastructures import ImmutableDict
 
 from .logger import LoggerProviderMixin
 
-__all__ = 'REGION_AMI_MAP', 'Instance'
+__all__ = 'REGION_AMI_MAP', 'Instance', 'Metadata'
 
 
 #: (:class:`collections.Mapping`) The mapping of regions to Ubuntu
@@ -452,6 +453,56 @@ class Instance(LoggerProviderMixin):
         else:
             with self.sftp() as sftp:
                 sftp.remove(path)
+
+
+class Metadata(collections.MutableMapping):
+    """Metadata tags on the instances.  It can be obtained by
+    :attr:`Instance.tags`.  It behaves like :class:`dict` (in other
+    words, implements :class:`collections.MutableMapping`).
+
+    :param instance: the instance that metadata belongs to
+    :type instance: :class:`Instance`
+
+    """
+
+    def __init__(self, instance):
+        if not isinstance(instance, Instance):
+            raise TypeError('instance must be an asuka.instance.Instance '
+                            'object, not ' + repr(instance))
+        self.instance = weakref.ref(instance)
+
+    def __len__(self):
+        return len(self.instance().instance.tags)
+
+    def __iter__(self):
+        return iter(self.instance().instance.tags)
+
+    def __getitem__(self, tag):
+        if not isinstance(tag, basestring):
+            raise TypeError('tag name must be a string, not ' + repr(tag))
+        return self.instance().instance.tags[tag]
+
+    def __setitem__(self, tag, value):
+        if not isinstance(tag, basestring):
+            raise TypeError('tag name must be a string, not ' + repr(tag))
+        self.instance().instance.add_tag(tag, value)
+
+    def __delitem__(self, tag):
+        if not isinstance(tag, basestring):
+            raise TypeError('tag name must be a string, not ' + repr(tag))
+        self.instance().instance.remove_tag(tag)
+
+    def update(self, mapping=[], **kwargs):
+        mapping = dict(mapping, **kwargs)
+        for tag in mapping:
+            if not isinstance(tag, basestring):
+                raise TypeError('tag name must be a string, not ' + repr(tag))
+        instance = self.instance()
+        instance.app.ec2_connection.create_tags(
+            [instance.instance.id],
+            mapping
+        )
+        instance.instance.tags.update(mapping)
 
 
 class WaitTimeoutError(RuntimeError):
