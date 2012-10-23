@@ -105,6 +105,9 @@ class Instance(LoggerProviderMixin):
     #: (:class:`basestring`) The unix name to login.
     login = None
 
+    #: (:class:`Metadata`) The tags mapping of the instance.
+    metadata = None
+
     def __init__(self, app, instance, login):
         from .app import App
         if not isinstance(app, App):
@@ -120,6 +123,7 @@ class Instance(LoggerProviderMixin):
         self.instance = instance
         self.login = login
         self.local = threading.local()
+        self.tags = Metadata(self)
 
     def __enter__(self):
         self.local.depth = getattr(self.local, 'depth', 0) + 1
