@@ -192,6 +192,16 @@ APTCACHE='/var/cache/apt/archives/'
             }
         )
         instance_setup_worker.start()
+        # setup metadata of the instance
+        nick = '-'.join([self.app.name, self.branch.label, self.commit.ref[:8]])
+        self.instance.tags.update(
+            Name=nick,
+            App=self.app.name,
+            Branch=self.branch.label,
+            Commit=self.commit.ref,
+            Status='started'
+        )
+        # making package (pybundle)
         fd, package_path = tempfile.mkstemp()
         os.close(fd)
         with self.fetch() as download_path:
@@ -222,9 +232,11 @@ APTCACHE='/var/cache/apt/archives/'
             self.instance.put_file(package_path, remote_path)
             # join instance_setup_worker
             instance_setup_worker.join()
+            self.instance.tags['Status'] = 'apt-installed'
             # crate.io is way faster than official PyPI mirros
             sudo(['pip', 'install', '-i', PYPI_INDEX_URL, remote_path] +
                  list(python_packages), environ={'CI': '1'})
+            self.instance.tags['Status'] = 'installed'
             # remove package
             self.instance.remove_file(remote_path)
             for service in service_manifests[1:]:
@@ -238,6 +250,7 @@ APTCACHE='/var/cache/apt/archives/'
         service_map = dict((service.name, service)
                            for service in service_manifests[1:])
         if self.app.route53_hosted_zone_id and self.app.route53_records:
+            self.instance.tags['Status'] = 'run'
             changeset = ResourceRecordSets(
                 self.app.route53_connection,
                 self.app.route53_hosted_zone_id,
@@ -255,6 +268,7 @@ APTCACHE='/var/cache/apt/archives/'
             if changeset.changes:
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
                 changeset.commit()
+        self.instance.tags['Status'] = 'done'
 
     def __repr__(self):
         c = type(self)
