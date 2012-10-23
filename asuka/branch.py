@@ -38,7 +38,8 @@ class Branch(LoggerProviderMixin):
     @property
     def label(self):
         """(:class:`str`) The label string readable by both human
-        and machine.  It can be used as subdomain name or path name.
+        and machine.  It's **identifiable from other branches**, so it
+        can be used as subdomain name or path name.
 
         """
         name = self.name
@@ -92,6 +93,7 @@ class Branch(LoggerProviderMixin):
             run(command, *args, **kwargs)
         remote = app.get_clone_url()
         if os.path.isdir(path):
+            git('reset --hard')
             git('checkout "{0}"', master)
             git('pull "{0}" "{1}"', remote, master)
         else:

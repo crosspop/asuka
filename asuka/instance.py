@@ -92,7 +92,7 @@ class Instance(LoggerProviderMixin):
         with instane:
             instance.do('echo 1')
 
-    --- but you don't have to of course.
+    --- but you don't have to do like that of course.
 
     """
 
