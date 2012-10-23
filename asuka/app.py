@@ -13,6 +13,8 @@ from paramiko.pkey import PKey
 from paramiko.rsakey import RSAKey
 from werkzeug.utils import cached_property
 
+from .instance import REGION_AMI_MAP, AMI_LOGIN_MAP, Instance
+
 __all__ = 'App',
 
 
@@ -44,6 +46,10 @@ class App(object):
     #: e.g. ``{'web': '{feature:branch-,pull-}.test.example.com.'}``.
     route53_records = {}
 
+    #: (:class:`collections.Set`) The set of security groups EC2 instances
+    #: to use.
+    ec2_security_groups = frozenset()
+
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
@@ -69,6 +75,7 @@ class App(object):
             setattr(self, attr, value)
         if self.private_key is None:
             self.key_pair
+        self.ec2_security_groups = frozenset(self.ec2_security_groups)
 
     @property
     def private_key(self):
@@ -201,6 +208,28 @@ class App(object):
             security_token=ec2.provider.security_token,
             validate_certs=ec2.https_validate_certificates
         )
+
+    def create_instance(self, instance_type='t1.micro'):
+        """Creates a new instance to deploy the application.
+
+        :param instance_type: the ec2 instance type.
+                              default is ``'t1.micro'``
+        :type instance_type: :class:`basestring`
+        :returns: the created new instance
+        :rtype: :class:`asuka.instance.Instance`
+
+        """
+        region = self.ec2_connection.region.name
+        ami = REGION_AMI_MAP[region]
+        login = AMI_LOGIN_MAP[ami]
+        reserve = self.ec2_connection.run_instances(
+            image_id=ami,
+            instance_type=instance_type,
+            key_name=self.key_name,
+            security_groups=list(self.ec2_security_groups)
+        )
+        instance = reserve.instances[0]
+        return Instance(self, instance, login)
 
     def __repr__(self):
         c = type(self)

@@ -13,11 +13,36 @@ import time
 
 from boto.ec2.instance import Instance as EC2Instance
 from paramiko.client import AutoAddPolicy, SSHClient
+from werkzeug.datastructures import ImmutableDict
 
-from .app import App
 from .logger import LoggerProviderMixin
 
-__all__ = 'Instance',
+__all__ = 'REGION_AMI_MAP', 'Instance'
+
+
+#: (:class:`collections.Mapping`) The mapping of regions to Ubuntu
+#: AMIs.
+REGION_AMI_MAP = ImmutableDict({
+    'ap-northeast-1': 'ami-60c77761',
+    'ap-southeast-1': 'ami-a4ca8df6',
+    'eu-west-1': 'ami-e1e8d395',
+    'sa-east-1': 'ami-8cd80691',
+    'us-east-1': 'ami-a29943cb',
+    'us-west-1': 'ami-87712ac2',
+    'us-west-2': 'ami-20800c10'
+})
+
+#: (:class:`collections.Mapping`) The mapping of Ubuntu AMIs to
+#: user login names (for SSH).
+AMI_LOGIN_MAP = ImmutableDict({
+    'ami-60c77761': 'ubuntu',
+    'ami-a4ca8df6': 'ubuntu',
+    'ami-e1e8d395': 'ubuntu',
+    'ami-8cd80691': 'ubuntu',
+    'ami-a29943cb': 'ubuntu',
+    'ami-87712ac2': 'ubuntu',
+    'ami-20800c10': 'ubuntu'
+})
 
 
 class Instance(LoggerProviderMixin):
@@ -80,6 +105,7 @@ class Instance(LoggerProviderMixin):
     login = None
 
     def __init__(self, app, instance, login):
+        from .app import App
         if not isinstance(app, App):
             raise TypeError('app must be an instance of asuka.app.App, not ' +
                             repr(app))

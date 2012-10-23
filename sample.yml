@@ -7,6 +7,8 @@ repository:
   repository: your/github-repo
   login: your-github-id
   password: your-github-password
+ec2_security_groups:
+- default
 route53_hosted_zone_id: your_route53_zone_id
 route53_records:
   elb: "{branch.label}.test.example.com."
