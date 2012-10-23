@@ -129,6 +129,7 @@ class Build(LoggerProviderMixin):
         logger = self.get_logger('install')
         sudo = self.instance.sudo
         def setup_instance(service_manifests, service_manifests_available):
+            logger = self.get_logger('install.setup_instance')
             with self.instance:
                 def aptitude(*commands):
                     sudo(['aptitude', '-y'] + list(commands),
