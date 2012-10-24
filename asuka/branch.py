@@ -131,8 +131,11 @@ class PullRequest(Branch):
         if not isinstance(number, numbers.Integral):
             raise TypeError('number must be an integer, not ' + repr(number))
         pr = app.repository.pull_request(number)
-        if pr and not pr.is_mergeable():
-            raise GitMergeError(repr(pr) + ' cannot be merged')
+        if pr:
+            mergeable = pr.is_mergeable()
+            if not mergeable:
+                msg = '{0!r} cannot be merged [{1!r}]'.format(pr, mergeable)
+                raise GitMergeError(msg)
         super(PullRequest, self).__init__(app, pr.base.ref)
         self.pull_request = pr
         self.number = number
