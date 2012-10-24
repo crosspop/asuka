@@ -269,6 +269,16 @@ APTCACHE='/var/cache/apt/archives/'
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
                 changeset.commit()
         self.instance.tags['Status'] = 'done'
+        reservations = self.app.ec2_connection.get_all_instances(filters={
+            'tag:App': self.app.name,
+            'tag:Branch': self.branch.label
+        })
+        self.app.ec2_connection.terminate_instances([
+            instance.id
+            for reservation in reservations
+            for instance in reservation.instances
+            if instance.tags.get('Commit', '').strip() != self.commit.ref
+        ])
 
     def __repr__(self):
         c = type(self)
