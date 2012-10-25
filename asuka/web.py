@@ -34,6 +34,18 @@ class WebApp(BaseApp):
         config['app'] = app
         super(WebApp, self).__init__(config)
 
+    @property
+    def app(self):
+        """(:class:`asuka.app.App`) The application object."""
+        return self.config['app']
+
+    def wsgi_app(self, environ, start_response):
+        app = self.app
+        if app.url_base:
+            url_base = '{0[wsgi.url_scheme]}://{0[HTTP_HOST]}'.format(environ)
+            app.url_base = url_base
+        return super(WebApp, self).wsgi_app(environ, start_response)
+
 
 def auth_required(function):
     """The decorator which makes the given view ``function`` to require

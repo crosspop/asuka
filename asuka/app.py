@@ -31,6 +31,11 @@ class App(object):
     #: (:class:`basestring`) The name of the app.
     name = None
 
+    #: (:class:`basestring`) The URL without any path of the web frontend
+    #: e.g. ``'http://example.com'``.  Note that there's no trailing
+    #: slash.
+    url_base = None
+
     #: (:class:`boto.ec2.connection.EC2Connection`) The EC2 connection
     #: to invoke APIs.
     ec2_connection = None
