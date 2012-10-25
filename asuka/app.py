@@ -2,6 +2,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+import hashlib
 import io
 import re
 
@@ -238,6 +239,19 @@ class App(object):
         )
         instance = reserve.instances[0]
         return Instance(self, instance, login)
+
+    @cached_property
+    def consistent_secret(self):
+        """(:class:`str`) The secret key consistent for every deployment
+        of the app.
+
+        """
+        key = ','.join((
+            self.name,
+            self.ec2_connection.provider.secret_key,
+            self.github_client_secret
+        ))
+        return hashlib.sha256(key).hexdigest()
 
     def __repr__(self):
         c = type(self)
