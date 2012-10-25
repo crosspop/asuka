@@ -1,14 +1,28 @@
+# The name of application.
 name: sample
+
+# AWS security credentials and region.
 ec2_connection:
   aws_access_key_id: your_aws_access_key
   aws_secret_access_key: your_aws_secret_key
   region_name: ap-northeast-1
+
+# Security groups EC2 instances to use.
+ec2_security_groups:
+- default
+
+# Route 53 configurations.
+route53_hosted_zone_id: your_route53_zone_id
+route53_records:
+  elb: "{branch.label}.test.example.com."
+
+# GitHub repository and login credential.
+# login and password will be replaced by token after it runs once.
 repository:
   repository: your/github-repo
   login: your-github-id
   password: your-github-password
-ec2_security_groups:
-- default
-route53_hosted_zone_id: your_route53_zone_id
-route53_records:
-  elb: "{branch.label}.test.example.com."
+
+# You can create a GitHub app from https://github.com/settings/applications/new
+github_client_id: github_app_client_id
+github_client_secret: github_app_client_secret

@@ -50,6 +50,12 @@ class App(object):
     #: to use.
     ec2_security_groups = frozenset()
 
+    #: (:class:`str`) The client ID of the GitHub app.
+    github_client_id = None
+
+    #: (:class:`str`) The client secret key of the GitHub app.
+    github_client_secret = None
+
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
@@ -76,6 +82,8 @@ class App(object):
         if self.private_key is None:
             self.key_pair
         self.ec2_security_groups = frozenset(self.ec2_security_groups)
+        self.github_client_id = str(self.github_client_id)
+        self.github_client_secret = str(self.github_client_secret)
 
     @property
     def private_key(self):
