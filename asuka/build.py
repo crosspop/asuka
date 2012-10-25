@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import threading
 
+from boto.exception import EC2ResponseError
 from boto.route53.record import ResourceRecordSets
 from pkg_resources import resource_string
 from werkzeug.utils import import_string
@@ -269,16 +270,19 @@ APTCACHE='/var/cache/apt/archives/'
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
                 changeset.commit()
         self.instance.tags['Status'] = 'done'
-        reservations = self.app.ec2_connection.get_all_instances(filters={
-            'tag:App': self.app.name,
-            'tag:Branch': self.branch.label
-        })
-        self.app.ec2_connection.terminate_instances([
-            instance.id
-            for reservation in reservations
-            for instance in reservation.instances
-            if instance.tags.get('Commit', '').strip() != self.commit.ref
-        ])
+        try:
+            reservations = self.app.ec2_connection.get_all_instances(filters={
+                'tag:App': self.app.name,
+                'tag:Branch': self.branch.label
+            })
+            self.app.ec2_connection.terminate_instances([
+                instance.id
+                for reservation in reservations
+                for instance in reservation.instances
+                if instance.tags.get('Commit', '').strip() != self.commit.ref
+            ])
+        except EC2ResponseError:
+            pass
 
     def __repr__(self):
         c = type(self)
