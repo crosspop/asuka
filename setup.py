@@ -17,8 +17,13 @@ from asuka.version import VERSION
 
 install_requires = [
     'boto == 2.6.0', 'distribute', 'github3.py == 0.1a8', 'iso8601 == 0.1.4',
-    'paramiko == 1.7.7.2', 'pip == 1.2.1', 'PyYAML == 3.10',
-    'Werkzeug == 0.8.3'
+    'paramiko == 1.7.7.2', 'Plastic == 0.1.0', 'pip == 1.2.1',
+    'PyYAML == 3.10', 'requests == 0.14.1', 'Werkzeug == 0.8.3'
+]
+
+
+dependency_links = [
+    'https://github.com/dahlia/plastic/tarball/master#egg=Plastic-0.1.0'
 ]
 
 
@@ -78,6 +83,7 @@ setup(
     packages=find_packages(),
     package_data={'asuka': ['apt-fast']},
     install_requires=install_requires,
+    dependency_links=dependency_links,
     version=VERSION,
     description='A deployment system for Python web apps using GitHub and EC2',
     long_description=readme(),

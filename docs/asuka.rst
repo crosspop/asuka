@@ -15,3 +15,4 @@
       asuka/service
       asuka/services
       asuka/version
+      asuka/web
