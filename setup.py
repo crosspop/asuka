@@ -24,23 +24,24 @@ install_requires = [
 
 def readme():
     try:
-        with open('README.rst') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
             readme = f.read()
     except IOError:
         pass
-    return re.sub(
-        r'''
+    pattern = re.compile(r'''
         (?P<colon> : \n{2,})?
-        \.\. [ ] code-block:: \s+ [^\n]+ \n
-        [^ \t]* \n
+        \s* \.\. [ ] code-block:: \s+ [^\n]+ \n
+        [ \t]* \n
         (?P<block>
             (?: (?: (?: \t | [ ]{3}) [^\n]* | [ \t]* ) \n)+
         )
-        ''',
-        lambda m: (':' + m.group('colon') if m.group('colon') else '') +
+    ''', re.VERBOSE)
+    return pattern.sub(
+        lambda m: (':' + m.group('colon') if m.group('colon') else ' ::') +
+                  '\n\n' +
                   '\n'.join(' ' + l for l in m.group('block').splitlines()) +
                   '\n\n',
-        readme, 0, re.VERBOSE
+        readme, 0
     )
 
 
