@@ -234,8 +234,9 @@ APTCACHE='/var/cache/apt/archives/'
             # join instance_setup_worker
             instance_setup_worker.join()
             self.instance.tags['Status'] = 'apt-installed'
-            # crate.io is way faster than official PyPI mirros
-            sudo(['pip', 'install', '-i', PYPI_INDEX_URL, remote_path] +
+            sudo(['pip', 'install', '-i', PYPI_INDEX_URL, remote_path],
+                 environ={'CI': '1'})
+            sudo(['pip', 'install', '-i', PYPI_INDEX_URL, '-I'] +
                  list(python_packages), environ={'CI': '1'})
             self.instance.tags['Status'] = 'installed'
             # remove package
