@@ -60,14 +60,119 @@ class GunicornService(Service):
 
     @property
     def required_python_packages(self):
-        packages = super(GunicornService, self).required_python_packages
-        return packages | self.worker.required_python_packages
+        packages = set(super(GunicornService, self).required_python_packages)
+        packages.update(self.worker.required_python_packages)
+        if self.auth_required:
+            packages.add('Werkzeug')
+        return packages
 
     @property
     def wsgi_app(self):
-        if 'wsgi_script' in self.config:
+        if 'wsgi_script' in self.config or self.auth_required:
             return 'web_wsgi:application'
         return self.config['wsgi_app']
+
+    @property
+    def wsgi_script(self):
+        wsgi_script = self.config.get('wsgi_script')
+        if not self.auth_required:
+            return wsgi_script
+        if wsgi_script is None:
+            imp = self.config['wsgi_app'].split(':')
+            wsgi_script = 'from {0} import {1} as application'.format(*imp)
+        appended_script = '''
+import datetime
+import hashlib
+import hmac
+import werkzeug.urls
+import werkzeug.wrappers
+
+@werkzeug.wrappers.BaseRequest.application
+def auth_application(request):
+    environ = request.environ
+    if (environ.get('HTTP_USER_AGENT', '').startswith('ELB-HealthChecker/') and
+        'X-Forwarded-For' not in request.headers and
+        'X-Forwarded-Port' not in request.headers and
+        'X-Forwarded-Proto' not in request.headers):
+        return werkzeug.wrappers.BaseResponse(
+            ['ELB Pong'],
+            status=200,
+            mimetype='text/plain'
+        )
+    auth = request.cookies.get('asuka_auth')
+    sig = request.cookies.get('asuka_sig')
+    if auth and sig:
+        secret = {secret!r}
+        if sig == hmac.new(secret, auth, hashlib.sha256).hexdigest():
+            try:
+                auth = datetime.datetime.strptime(auth, '%Y%m%d%H%M%S')
+            except ValueError:
+                pass
+            else:
+                if datetime.datetime.utcnow() <= auth:
+                    return auth_application.application
+    token = request.args.get('token')
+    sig = request.args.get('sig')
+    if token and sig:
+        secret = {consistent_secret!r}
+        if sig == hmac.new(secret, token, hashlib.sha256).hexdigest():
+            try:
+                ts, login, host = token.split('/', 2)
+                ts = datetime.datetime.strptime(ts, '%Y%m%d%H%M%S')
+            except ValueError:
+                pass
+            else:
+                if host == request.host:
+                    gap = datetime.datetime.utcnow() - ts
+                    if gap <= datetime.timedelta(minutes=1):
+                        back = request.cookies.get('asuka_auth_back',
+                                                   request.url)
+                        expires = datetime.timedelta(seconds={auth_expires!r})
+                        auth_ts = datetime.datetime.utcnow() + expires
+                        auth = auth_ts.strftime('%Y%m%d%H%M%S')
+                        sig = hmac.new({secret!r}, auth, hashlib.sha256)
+                        response = werkzeug.wrappers.Response(
+                            ['Authenticated; redirecting to ', back],
+                            status=302,
+                            headers=dict(Location=back),
+                            mimetype='text/plain'
+                        )
+                        response.delete_cookie('asuka_auth_back')
+                        response.set_cookie('asuka_auth', auth,
+                                            expires=auth_ts)
+                        response.set_cookie('asuka_sig', sig.hexdigest(),
+                                            expires=auth_ts)
+                        return response
+    delegate_url = {delegate_url!r} + '?' + werkzeug.urls.url_encode(
+        dict(back=request.url)
+    )
+    response = werkzeug.wrappers.BaseResponse(
+        ['Redirecting to ', delegate_url],
+        status=302,
+        headers=dict(Location=delegate_url),
+        mimetype='text/plain'
+    )
+    response.set_cookie('asuka_auth_back', request.url)
+    return response
+auth_application.application = application
+application = auth_application
+'''
+        secret = '.'.join((
+            self.app.name,
+            self.branch.label,
+            self.app.consistent_secret
+        ))
+        wsgi_script += appended_script.format(
+            secret=secret,
+            consistent_secret=self.app.consistent_secret,
+            delegate_url=self.app.url_base + '/delegate/',
+            auth_expires=self.config.get('auth_expires', 3 * 3600)
+        )
+        return wsgi_script
+
+    @property
+    def auth_required(self):
+        return bool(self.config.get('auth_required'))
 
     def install(self, instance):
         super(GunicornService, self).install(instance)
@@ -77,11 +182,8 @@ class GunicornService(Service):
             'service_name': self.name,
             'service_path': instance.app.name + '/' + self.name
         }
-        try:
-            wsgi_script = self.config['wsgi_script']
-        except KeyError:
-            pass
-        else:
+        wsgi_script = self.wsgi_script
+        if wsgi_script is not None:
             instance.write_file(
                 '/etc/{service_path}/web_wsgi.py'.format(**format_args),
                 wsgi_script,

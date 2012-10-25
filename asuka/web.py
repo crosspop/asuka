@@ -2,8 +2,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+import datetime
 import functools
+import hashlib
+import hmac
 import random
+import re
 
 from github3.api import login
 from plastic.app import BaseApp
@@ -64,17 +68,18 @@ def auth_required(function):
         if github_login:
             request.context.github_login = github_login
             return function(request, *args, **kwargs)
-        return redirect(request.build_url('authorize'))
+        url = request.build_url('authorize', back=request.url, _external=True)
+        return redirect(url)
     return decorated
 
 
 @WebApp.route('/')
 def authorize(request):
     """Authorizes the user using GitHub OAuth 2."""
-    back = request.args.get('back', request.build_url('home'))
+    back = request.args.get('back', request.build_url('home', _external=True))
     if request.session.get('github_login'):
         return redirect(back)
-    app = request.app.config['app']
+    app = request.app.app
     code = request.args.get('code')
     if not code:
         # Step 1
@@ -117,3 +122,21 @@ def authorize(request):
 def home(request):
     """The home page."""
     return 'Hi, ' + request.context.github_login
+
+
+@WebApp.route('/delegate/')
+@auth_required
+def delegate(request):
+    """Delegated authentication for deployed web apps."""
+    back = request.args.get('back', request.referrer)
+    login = request.context.github_login
+    timestamp = datetime.datetime.utcnow()
+    hostname = re.search(r'^https?://([^/]+)/', back).group(1)
+    token = '{0:%Y%m%d%H%M%S}/{1}/{2}'.format(timestamp, login, hostname)
+    secret = request.app.app.consistent_secret
+    sig = hmac.new(secret, token, hashlib.sha256).hexdigest()
+    back += ('&' if '?' in back else '?') + url_encode({
+        'token': token,
+        'sig': sig
+    })
+    return redirect(back)
