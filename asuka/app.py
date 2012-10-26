@@ -154,7 +154,33 @@ class App(object):
     @property
     def repository(self):
         """(:class:`github3.repos.Repository`) The repository of the app."""
-        return getattr(self, '_repository', None)
+        repo = getattr(self, '_repository', None)
+        hook_name = 'web'
+        hook_events = frozenset(['push', 'pull_request'])
+        hook_config = {
+            'url': self.url_base + '/hook/',
+            'content_type': 'json',
+            'secret': self.github_client_secret
+        }
+        for hook in repo.list_hooks():
+            if (hook.name == hook_name and
+                frozenset(hook.events) == hook_events and
+                hook.config == hook_config):
+                if not hook.is_active():
+                    hook.edit(
+                        name=hook_name,
+                        events=list(hook_events),
+                        config=hook_config,
+                        active=True
+                    )
+                return repo
+        repo.create_hook(
+            name=hook_name,
+            events=list(hook_events),
+            config=hook_config,
+            active=True
+        )
+        return repo
 
     @repository.setter
     def repository(self, repos):
