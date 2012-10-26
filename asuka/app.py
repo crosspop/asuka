@@ -258,6 +258,15 @@ class App(object):
         ))
         return hashlib.sha256(key).hexdigest()
 
+    def __eq__(self, operand):
+        return isinstance(operand, type(self)) and operand.name == self.name
+
+    def __ne__(self, operand):
+        return not (self == operand)
+
+    def __hash__(self):
+        return hash(self.name)
+
     def __repr__(self):
         c = type(self)
         return '<{0}.{1} {2!r}>'.format(c.__module__, c.__name__, self.name)

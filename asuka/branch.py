@@ -111,6 +111,17 @@ class Branch(LoggerProviderMixin):
             git('branch -D "{0}"', self.name)
         git('reset --hard')
 
+    def __eq__(self, operand):
+        if isinstance(operand, type(self)):
+            return self.label == operand.label
+        return False
+
+    def __ne__(self, operand):
+        return not (self == operand)
+
+    def __hash__(self):
+        return hash(self.name)
+
     def __repr__(self):
         c = type(self)
         if self.pull_request:
@@ -184,6 +195,9 @@ class PullRequest(Branch):
             yield path
             git('checkout "{0}"', self.name)
             git('branch -D asuka-mergedpullreq-{0}', self.number)
+
+    def __hash__(self):
+        return self.number
 
 
 class GitMergeError(EnvironmentError):
