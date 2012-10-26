@@ -129,7 +129,8 @@ end script
         instance.sudo([
             'service', instance.app.name + '-' + self.name, 'start'
         ])
-        self.load_balancer.deregister_instances(instances)
+        if instances:
+            self.load_balancer.deregister_instances(instances)
 
     def route_domain(self, name, records):
         dns_name = self.load_balancer.dns_name
