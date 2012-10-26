@@ -26,3 +26,7 @@ repository:
 # You can create a GitHub app from https://github.com/settings/applications/new
 github_client_id: github_app_client_id
 github_client_secret: github_app_client_secret
+
+# The list of web hook urls
+start_hook_urls: []
+finish_hpook_urls: []

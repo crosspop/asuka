@@ -62,6 +62,14 @@ class App(object):
     #: (:class:`str`) The client secret key of the GitHub app.
     github_client_secret = None
 
+    #: (:class:`collections.Sequence`) The list of hook urls requested
+    #: when the build has started.  These urls are requested in the order.
+    start_hook_urls = []
+
+    #: (:class:`collections.Sequence`) The list of hook urls requested
+    #: when the build has finished.  These urls are requested in the order.
+    finish_hook_urls = []
+
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
@@ -90,6 +98,8 @@ class App(object):
         self.ec2_security_groups = frozenset(self.ec2_security_groups)
         self.github_client_id = str(self.github_client_id)
         self.github_client_secret = str(self.github_client_secret)
+        self.start_hook_urls = list(self.start_hook_urls)
+        self.finish_hook_urls = list(self.finish_hook_urls)
 
     @property
     def private_key(self):
