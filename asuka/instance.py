@@ -145,7 +145,7 @@ class Instance(LoggerProviderMixin):
                         pkey=self.app.private_key
                     )
                 except socket.error as e:
-                    if 60 <= e.errno <= 61 and trial <= 20:
+                    if e.errno in (60, 61, 111, 113) and trial <= 20:
                         time.sleep(3)
                         trial += 1
                         continue
