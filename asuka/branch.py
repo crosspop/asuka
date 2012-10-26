@@ -14,10 +14,18 @@ from werkzeug.utils import cached_property
 from .app import App
 from .logger import LoggerProviderMixin
 
-__all__ = 'Branch', 'PullRequest'
+__all__ = 'Branch', 'GitMergeError', 'PullRequest'
 
 
 class Branch(LoggerProviderMixin):
+    """The branch line for continous deployment.
+
+    :param app: the application object
+    :type app: :class:`~asuka.app.App`
+    :param name: the branch name e.g. ``'master'``
+    :type name: :class:`basestring`
+
+    """
 
     #: (:class:`~asuka.app.App`) The application object.
     app = None
@@ -134,6 +142,14 @@ class Branch(LoggerProviderMixin):
 
 
 class PullRequest(Branch):
+    """The ad-hoc branch made by pull requests.
+
+    :param app: the application object
+    :type app: :class:`~asuka.app.App`
+    :param number: the pull request number
+    :type number: :class:`numbers.Integral`
+
+    """
 
     #: (:class:`github3.pulls.PullRequest`) The GitHub pull request object.
     pull_request = None
