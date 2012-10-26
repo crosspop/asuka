@@ -7,6 +7,7 @@
       asuka/app
       asuka/branch
       asuka/build
+      asuka/cli
       asuka/commit
       asuka/config
       asuka/dist
