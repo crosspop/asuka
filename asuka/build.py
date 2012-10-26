@@ -126,6 +126,10 @@ class Build(LoggerProviderMixin):
         """Installs the build and required :attr:`services`
         into the :attr:`instance`.
 
+        :returns: the map of deployed services to these domain names
+                  e.g. ``{'elb': 'pull-123.test.example.com.'}``
+        :rtype: :class:`collections.Mapping`
+
         """
         logger = self.get_logger('install')
         sudo = self.instance.sudo
@@ -251,6 +255,7 @@ APTCACHE='/var/cache/apt/archives/'
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
         service_map = dict((service.name, service)
                            for service in service_manifests[1:])
+        deployed_domains = {}
         if self.app.route53_hosted_zone_id and self.app.route53_records:
             self.instance.tags['Status'] = 'run'
             changeset = ResourceRecordSets(
@@ -266,6 +271,7 @@ APTCACHE='/var/cache/apt/archives/'
                     raise TypeError(repr(service) + 'is not an instance of '
                                     'crosspop.service.DomainService')
                 domain = domain_format.format(branch=self.branch)
+                deployed_domains[service_name] = domain
                 service.route_domain(domain, changeset)
             if changeset.changes:
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
@@ -284,6 +290,7 @@ APTCACHE='/var/cache/apt/archives/'
             ])
         except EC2ResponseError:
             pass
+        return deployed_domains
 
     def __repr__(self):
         c = type(self)
