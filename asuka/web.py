@@ -6,8 +6,13 @@ import datetime
 import functools
 import hashlib
 import hmac
+import json
+import logging
+import multiprocessing
 import random
 import re
+import sys
+import traceback
 
 from github3.api import login
 from plastic.app import BaseApp
@@ -17,8 +22,11 @@ from werkzeug.urls import url_encode
 from werkzeug.utils import redirect
 
 from .app import App
+from .branch import Branch, PullRequest
+from .build import Build
+from .commit import Commit
 
-__all__ = 'WebApp', 'auth_required', 'authorize', 'home'
+__all__ = 'WebApp', 'auth_required', 'authorize', 'delegate', 'home', 'hook'
 
 
 class WebApp(BaseApp):
@@ -31,12 +39,22 @@ class WebApp(BaseApp):
 
     """
 
+    #: (:class:`multiprocessing.Pool`) The multiprocessing pool.
+    pool = None
+
     def __init__(self, app, config={}):
         if not isinstance(app, App):
             raise TypeError('app must be an instance of asuka.app.App, not ' +
                             repr(app))
         config['app'] = app
         super(WebApp, self).__init__(config)
+        try:
+            pool_size = multiprocessing.cpu_count()
+        except NotImplementedError:
+            pool_size = 3
+        else:
+            pool_size = pool_size * 2 + 1
+        self.pool = multiprocessing.Pool(pool_size)
 
     @property
     def app(self):
@@ -122,6 +140,51 @@ def authorize(request):
 def home(request):
     """The home page."""
     return 'Hi, ' + request.context.github_login
+
+
+@WebApp.route('/hook/')
+def hook(request):
+    app = request.app.app
+    assert request.mimetype == 'application/json'
+    data = request.data
+    sig = hmac.new(app.github_client_secret, data, hashlib.sha1)
+    assert request.headers['X-Hub-Signature'].split('=')[1] == sig.hexdigest()
+    payload = json.loads(data)
+    event = request.headers['X-GitHub-Event']
+    if event == 'pull_request':
+        hook_pull_request(request.app, payload)
+    elif event == 'push':
+        hook_push(request.app, payload)
+    return 'okay'
+
+
+def hook_pull_request(webapp, payload):
+    pull_request = payload['pull_request']
+    commit = Commit(webapp.app, pull_request['head']['sha'])
+    branch = PullRequest(webapp.app, pull_request['number'])
+    deploy(webapp, commit, branch)
+
+
+def hook_push(webapp, payload):
+    commit = Commit(webapp.app, payload['after'])
+    branch = Branch(webapp.app, payload['ref'].split('/', 2)[2])
+    deploy(webapp, commit, branch)
+
+
+def deploy(webapp, commit, branch):
+    webapp.pool.apply_async(deploy_worker, (branch, commit))
+
+
+def deploy_worker(branch, commit):
+    try:
+        logger = logging.getLogger('asuka')
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(logging.StreamHandler(sys.stderr))
+        instance = branch.app.create_instance()
+        build = Build(branch, commit, instance)
+        build.install()
+    except Exception:
+        traceback.print_exc()
 
 
 @WebApp.route('/delegate/')
