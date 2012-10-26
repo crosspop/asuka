@@ -146,8 +146,8 @@ class PullRequest(Branch):
             raise ValueError("pull request #{0} can't be found".format(number))
         for x in xrange(10):
             mergeable = pr.is_mergeable()
-            if mergeable is None:
-                pr.refresh()
+            if mergeable is None or x < 2:
+                pr = app.repository.pull_request(number)
                 continue
             break
         if not mergeable:
