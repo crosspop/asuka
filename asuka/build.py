@@ -261,8 +261,9 @@ APTCACHE='/var/cache/apt/archives/'
             changeset = ResourceRecordSets(
                 self.app.route53_connection,
                 self.app.route53_hosted_zone_id,
-                'Changed by Asuka: {0}, {1}'.format(self.app.name,
-                                                    self.commit.ref)
+                'Changed by Asuka: {0}, {1} [{2}]'.format(self.app.name,
+                                                          self.branch.label,
+                                                          self.commit.ref)
             )
             from .service import DomainService
             for service_name, domain_format in self.app.route53_records.items():
