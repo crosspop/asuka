@@ -208,3 +208,14 @@ end script
                     break
             record = records.add_change('CREATE', name, 'CNAME')
             record.add_value(self.dualstack_dns_name)
+
+    def uninstall(self):
+        super(ELBService, self).uninstall()
+        conn = self.elb_connection
+        try:
+            balancers = conn.get_all_load_balancers([self.load_balancer_name])
+        except BotoServerError:
+            pass
+        else:
+            for balancer in balancers:
+                balancer.delete()

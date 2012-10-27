@@ -147,6 +147,9 @@ class Service(object):
                 '/var/run/{0}'.format(*F)
             ])
 
+    def uninstall(self):
+        """Uninstalls the service."""
+
     def __repr__(self):
         cls = type(self)
         return '<{0.__module__}.{0.__name__} {1!r}>'.format(cls, self.name)
