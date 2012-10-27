@@ -12,7 +12,6 @@ import multiprocessing
 import random
 import re
 import sys
-import traceback
 
 from github3.api import login
 from plastic.app import BaseApp
