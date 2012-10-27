@@ -22,16 +22,16 @@ from .dist import PYPI_INDEX_URL, Dist
 from .instance import Instance
 from .logger import LoggerProviderMixin
 
-__all__ = 'Build',
+__all__ = 'BaseBuild', 'Build', 'Clean'
 
 
-class Build(LoggerProviderMixin):
-    """Build of commit.
+class BaseBuild(LoggerProviderMixin):
+    """The abstract base class of :class:`Build` and :class:`Clean`.
 
+    :param branch: the branch of the build
+    :type branch: :class:`~asuka.banch.Branch`
     :param commit: the commit of the build
     :type commit: :class:`~asuka.commit.Commit`
-    :param instance: the instance the build is/will be done.
-    :type instance: :class:`~asuka.instance.Instance`
 
     """
 
@@ -52,29 +52,20 @@ class Build(LoggerProviderMixin):
     #: (:class:`~asuka.dist.Dist`) The package distribution object.
     dist = None
 
-    #: (:class:`~asuka.instance.Instance`) The instance the build
-    #: is/will be done.
-    instance = None
-
-    def __init__(self, branch, commit, instance):
+    def __init__(self, branch, commit):
         if not isinstance(branch, Branch):
             raise TypeError('branch must be an instance of asuka.branch.'
                             'Branch, not ' + repr(branch))
         elif not isinstance(commit, Commit):
             raise TypeError('commit must be an instance of asuka.commit.'
                             'Commit, not ' + repr(commit))
-        elif not isinstance(instance, Instance):
-            raise TypeError('expected an instance of asuka.instance.'
-                            'Instance, not ' + repr(instance))
-        elif not (branch.app is commit.app is instance.app):
-            raise TypeError('{0!r}, {1!r} and {2!r} are not compatible for '
-                            'each other; their applications differ: '
-                            '{0.app!r}, {1.app!r}, and {2.app!r} '
-                            'respectively'.format(branch, commit, instance))
+        elif branch.app is not commit.app:
+            raise TypeError('{0!r} and {1!r} are not compatible for each '
+                            'other; their applications differ: {0.app!r}, '
+                            'and {1.app!r}'.format(branch, commit))
         self.app = branch.app
         self.branch = branch
         self.commit = commit
-        self.instance = instance
         self.dist = Dist(branch, commit)
 
     @contextlib.contextmanager
@@ -121,6 +112,60 @@ class Build(LoggerProviderMixin):
                 except Exception as e:
                     raise type(e)(name + ': ' + str(e))
                 yield service
+
+    def terminate_instances(self, ignore_commit=False):
+        """Terminates the instances of the :attr:`branch`."""
+        logger = self.get_logger('terminate_instances')
+        try:
+            reservations = self.app.ec2_connection.get_all_instances(filters={
+                'tag:App': self.app.name,
+                'tag:Branch': self.branch.label
+            })
+            instance_ids = [
+                instance.id
+                for reservation in reservations
+                for instance in reservation.instances
+                if (ignore_commit or
+                    instance.tags.get('Commit', '').strip() != self.commit.ref)
+            ]
+            logger.debug('instance_ids = %r', instance_ids)
+            self.app.ec2_connection.terminate_instances(instance_ids)
+        except EC2ResponseError as e:
+            logger.exception(e)
+
+    def __repr__(self):
+        c = type(self)
+        return '<{0}.{1} {2} {3}>'.format(c.__module__, c.__name__,
+                                          self.app.name, self.commit.ref)
+
+
+class Build(BaseBuild):
+    """Build of commit.
+
+    :param branch: the branch of the build
+    :type branch: :class:`~asuka.banch.Branch`
+    :param commit: the commit of the build
+    :type commit: :class:`~asuka.commit.Commit`
+    :param instance: the instance the build is/will be done.
+    :type instance: :class:`~asuka.instance.Instance`
+
+    """
+
+    #: (:class:`~asuka.instance.Instance`) The instance the build
+    #: is/will be done.
+    instance = None
+
+    def __init__(self, branch, commit, instance):
+        super(Build, self).__init__(branch, commit)
+        if not isinstance(instance, Instance):
+            raise TypeError('expected an instance of asuka.instance.'
+                            'Instance, not ' + repr(instance))
+        elif not (branch.app is commit.app is instance.app):
+            raise TypeError('{0!r}, {1!r} and {2!r} are not compatible for '
+                            'each other; their applications differ: '
+                            '{0.app!r}, {1.app!r}, and {2.app!r} '
+                            'respectively'.format(branch, commit, instance))
+        self.instance = instance
 
     def install(self):
         """Installs the build and required :attr:`services`
@@ -278,22 +323,39 @@ APTCACHE='/var/cache/apt/archives/'
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
                 changeset.commit()
         self.instance.tags['Status'] = 'done'
-        try:
-            reservations = self.app.ec2_connection.get_all_instances(filters={
-                'tag:App': self.app.name,
-                'tag:Branch': self.branch.label
-            })
-            self.app.ec2_connection.terminate_instances([
-                instance.id
-                for reservation in reservations
-                for instance in reservation.instances
-                if instance.tags.get('Commit', '').strip() != self.commit.ref
-            ])
-        except EC2ResponseError:
-            pass
+        self.terminate_instances()
         return deployed_domains
 
-    def __repr__(self):
-        c = type(self)
-        return '<{0}.{1} {2} {3}>'.format(c.__module__, c.__name__,
-                                          self.app.name, self.commit.ref)
+
+class Clean(BaseBuild):
+
+    def uninstall(self):
+        """Uninstalls the :attr:`services`, cleans up the domains, and
+        terminate instances.
+
+        """
+        logger = self.get_logger('uninstall')
+        self.terminate_instances(ignore_commit=True)
+        service_map = dict((s.name, s) for s in self.services)
+        if self.app.route53_hosted_zone_id and self.app.route53_records:
+            changeset = ResourceRecordSets(
+                self.app.route53_connection,
+                self.app.route53_hosted_zone_id,
+                'Changed by Asuka: {0}, {1} [clean]'.format(self.app.name,
+                                                            self.branch.label)
+            )
+            from .service import DomainService
+            for service_name, domain_format in self.app.route53_records.items():
+                service = service_map[service_name]
+                if not isinstance(service, DomainService):
+                    raise TypeError(repr(service) + 'is not an instance of '
+                                    'crosspop.service.DomainService')
+                domain = domain_format.format(branch=self.branch)
+                service.remove_domain(domain, changeset)
+            if changeset.changes:
+                logger.info('Route 53 changeset:\n%s', changeset.to_xml())
+                changeset.commit()
+        for name, service in service_map.iteritems():
+            logger.info('Uninstall %s...', name)
+            service.uninstall()
+            logger.info('Uninstalled %s', name)

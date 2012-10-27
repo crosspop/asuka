@@ -4,7 +4,7 @@
 """
 import re
 
-from .build import Build
+from .build import BaseBuild
 from .instance import Instance
 
 __all__ = 'DomainService', 'Service'
@@ -14,7 +14,7 @@ class Service(object):
     """The inteface of services.
 
     :param build: the build object
-    :type build: :class:`~asuka.build.Build`
+    :type build: :class:`~asuka.build.BaseBuild`
     :param name: the service name
     :type name: :class:`basestring`
     :param config: the config mapping object
@@ -66,9 +66,9 @@ class Service(object):
                  required_python_packages=frozenset(),
                  pre_install=[],
                  post_install=[]):
-        if not isinstance(build, Build):
-            raise TypeError('build must be an instance of asuka.build.Build, '
-                            'not ' + repr(build))
+        if not isinstance(build, BaseBuild):
+            raise TypeError('build must be an instance of asuka.build.'
+                            'BaseBuild, not ' + repr(build))
         elif not isinstance(name, basestring):
             raise TypeError('name must be a string, not ' + repr(name))
         elif not self.NAME_PATTERN.search(name):
