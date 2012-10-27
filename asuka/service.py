@@ -13,8 +13,8 @@ __all__ = 'DomainService', 'Service'
 class Service(object):
     """The inteface of services.
 
-    :param app: the application object
-    :type app: :class:`~asuka.app.App`
+    :param build: the build object
+    :type build: :class:`~asuka.build.Build`
     :param name: the service name
     :type name: :class:`basestring`
     :param config: the config mapping object
