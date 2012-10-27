@@ -167,3 +167,13 @@ class DomainService(Service):
         :type records: :class:`boto.route53.record.ResourceRecordSets`
 
         """
+
+    def remove_domain(self, name, records):
+        """Removes the records for the service from the zone.
+
+        :param name: the full domain name to deregister
+        :type name: :class:`basestring`
+        :param records: the record changeset
+        :type records: :class:`boto.route53.record.ResourceRecordSets`
+
+        """

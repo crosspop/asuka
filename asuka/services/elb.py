@@ -219,3 +219,40 @@ end script
         else:
             for balancer in balancers:
                 balancer.delete()
+
+    def remove_domain(self, name, records):
+        zone_id = self.app.route53_hosted_zone_id
+        hosted_zone_id = self.load_balancer.canonical_hosted_zone_name_id
+        zone = records.connection.get_hosted_zone(zone_id)
+        topname = zone['GetHostedZoneResponse']['HostedZone']['Name']
+        get_list = records.connection.get_all_rrsets
+        if topname == name:
+            goals = [('A', self.dns_name), ('AAAA', self.ipv6_dns_name)]
+            for type_, dns_name in goals:
+                for record in get_list(zone_id, 'A', name):
+                    if record.type == 'A' and record.name == name:
+                        delete = records.add_change(
+                            'DELETE',
+                            name=record.name,
+                            type=record.type,
+                            ttl=record.ttl,
+                            alias_hosted_zone_id=hosted_zone_id,
+                            alias_dns_name=dns_name,
+                            identifier=record.identifier,
+                            weight=record.weight,
+                            region=record.region
+                        )
+                        delete.resource_records = record.resource_records
+        else:
+            for record in get_list(zone_id, 'CNAME', name):
+                if record.type == 'CNAME' and record.name == name:
+                    delete = records.add_change(
+                        'DELETE',
+                        name=record.name,
+                        type=record.type,
+                        ttl=record.ttl,
+                        identifier=record.identifier,
+                        weight=record.weight,
+                        region=record.region
+                    )
+                    delete.resource_records = record.resource_records
