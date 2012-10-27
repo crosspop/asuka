@@ -132,11 +132,23 @@ end script
         if instances:
             self.load_balancer.deregister_instances(instances)
 
-    def route_domain(self, name, records):
+    @property
+    def dns_name(self):
         dns_name = self.load_balancer.dns_name
         assert dns_name is not None
         if not dns_name.endswith('.'):
             dns_name += '.'
+        return dns_name
+
+    @property
+    def ipv6_dns_name(self):
+        return 'ipv6.' + self.dns_name
+
+    @property
+    def dualstack_dns_name(self):
+        return 'dualstack.' + self.dns_name
+
+    def route_domain(self, name, records):
         zone_id = self.app.route53_hosted_zone_id
         zone = records.connection.get_hosted_zone(zone_id)
         topname = zone['GetHostedZoneResponse']['HostedZone']['Name']
@@ -144,7 +156,7 @@ end script
         if topname == name:
             hosted_zone_id = self.load_balancer.canonical_hosted_zone_name_id
             assert hosted_zone_id is not None
-            goals = [('A', dns_name), ('AAAA', 'ipv6.' + dns_name)]
+            goals = [('A', self.dns_name), ('AAAA', self.ipv6_dns_name)]
             for type_, dns_name in goals:
                 skip = False
                 for record in get_list(zone_id, type_, name):
@@ -177,10 +189,9 @@ end script
                         alias_dns_name=dns_name
                     )
         else:
-            dns_name = 'dualstack.' + dns_name
             for record in get_list(zone_id, 'CNAME', name):
                 if record.type == 'CNAME' and record.name == name:
-                    if record.resource_records == [dns_name]:
+                    if record.resource_records == [self.dualstack_dns_name]:
                         # already exists; skip
                         return
                     # already exists but not matched; delete first
@@ -196,4 +207,4 @@ end script
                     delete.resource_records = record.resource_records
                     break
             record = records.add_change('CREATE', name, 'CNAME')
-            record.add_value(dns_name)
+            record.add_value(self.dualstack_dns_name)
