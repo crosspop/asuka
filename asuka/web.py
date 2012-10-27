@@ -22,7 +22,7 @@ from werkzeug.utils import redirect
 
 from .app import App
 from .branch import Branch, PullRequest
-from .build import Build
+from .build import Build, Clean
 from .commit import Commit
 
 __all__ = 'WebApp', 'auth_required', 'authorize', 'delegate', 'home', 'hook'
@@ -143,6 +143,7 @@ def home(request):
 
 @WebApp.route('/hook/')
 def hook(request):
+    logger = logging.getLogger(__name__ + '.hook')
     app = request.app.app
     assert request.mimetype == 'application/json'
     data = request.data
@@ -150,6 +151,8 @@ def hook(request):
     assert request.headers['X-Hub-Signature'].split('=')[1] == sig.hexdigest()
     payload = json.loads(data)
     event = request.headers['X-GitHub-Event']
+    logger.info('event = %r', event)
+    logger.debug('payload = %r', payload)
     if event == 'pull_request':
         hook_pull_request(request.app, payload)
     elif event == 'push':
@@ -161,7 +164,10 @@ def hook_pull_request(webapp, payload):
     pull_request = payload['pull_request']
     commit = Commit(webapp.app, pull_request['head']['sha'])
     branch = PullRequest(webapp.app, pull_request['number'])
-    deploy(webapp, commit, branch)
+    if payload['action'] == 'closed':
+        cleanup(webapp, commit, branch)
+    else:
+        deploy(webapp, commit, branch)
 
 
 def hook_push(webapp, payload):
@@ -170,7 +176,30 @@ def hook_push(webapp, payload):
     deploy(webapp, commit, branch)
 
 
+def cleanup(webapp, commit, branch):
+    logger = logging.getLogger(__name__ + '.cleanup')
+    logger.info('start cleaning up: %s [%s]', branch.label, commit.ref)
+    webapp.pool.apply_async(cleanup_worker, (branch, commit))
+
+
+def cleanup_worker(branch, commit):
+    logger = logging.getLogger(__name__ + '.cleanup_worker')
+    try:
+        system_logger = logging.getLogger('asuka')
+        system_logger.setLevel(logging.DEBUG)
+        system_logger.addHandler(logging.StreamHandler(sys.stderr))
+        logger.info('start cleanup_worker: %s [%s]', branch.label, commit.ref)
+        clean = Clean(branch, commit)
+        clean.uninstall()
+        logger.info('finished cleanup_worker: %s [%s]',
+                    branch.label, commit.ref)
+    except Exception as e:
+        logger.exception(e)
+
+
 def deploy(webapp, commit, branch):
+    logger = logging.getLogger(__name__ + '.deploy')
+    logger.info('start deployment: %s [%s]', branch.label, commit.ref)
     webapp.pool.apply_async(deploy_worker, (branch, commit))
 
 
@@ -214,10 +243,12 @@ def make_payload(branch, commit):
 
 
 def deploy_worker(branch, commit):
+    logger = logging.getLogger(__name__ + '.deploy_worker')
     try:
-        logger = logging.getLogger('asuka')
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(logging.StreamHandler(sys.stderr))
+        system_logger = logging.getLogger('asuka')
+        system_logger.setLevel(logging.DEBUG)
+        system_logger.addHandler(logging.StreamHandler(sys.stderr))
+        logger.info('start deploy_worker: %s [%s]', branch.label, commit.ref)
         # start web hook
         payload = make_payload(branch, commit)
         with session() as client:
@@ -243,8 +274,9 @@ def deploy_worker(branch, commit):
                     headers={'Content-Type': 'application/json'},
                     data=json.dumps(payload)
                 )
+        logger.info('finished deploy_worker: %s [%s]', branch.label, commit.ref)
     except Exception as e:
-        logging.getLogger(__name__ + '.deploy_worker').exception(e)
+        logger.exception(e)
 
 
 @WebApp.route('/delegate/')
