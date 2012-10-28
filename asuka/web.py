@@ -164,7 +164,7 @@ def hook_pull_request(webapp, payload):
     pull_request = payload['pull_request']
     commit = Commit(webapp.app, pull_request['head']['sha'])
     branch = PullRequest(webapp.app, pull_request['number'])
-    if payload['action'] == 'closed':
+    if payload['action'] in ('closed', 'synchronize'):
         cleanup(webapp, commit, branch)
     else:
         deploy(webapp, commit, branch)
