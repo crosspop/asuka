@@ -6,7 +6,6 @@ import collections
 import hashlib
 import io
 import re
-import weakref
 
 from boto.ec2.connection import EC2Connection
 from boto.exception import EC2ResponseError
@@ -73,10 +72,6 @@ class App(object):
     #: when the build has finished.  These urls are requested in the order.
     finish_hook_urls = []
 
-    #: (:class:`collections.Mapping`) The mapping of currently deployed
-    #: banches (and commits).
-    deployed_branches = []
-
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
@@ -107,7 +102,6 @@ class App(object):
         self.github_client_secret = str(self.github_client_secret)
         self.start_hook_urls = list(self.start_hook_urls)
         self.finish_hook_urls = list(self.finish_hook_urls)
-        self.deployed_branches = DeployedBranchDict(self)
 
     @property
     def private_key(self):
@@ -302,6 +296,14 @@ class App(object):
         ))
         return hashlib.sha256(key).hexdigest()
 
+    @property
+    def deployed_branches(self):
+        """(:class:`collections.Mapping`) The mapping of currently
+        deployed banches (and commits).
+
+        """
+        return DeployedBranchDict(self)
+
     def __eq__(self, operand):
         return isinstance(operand, type(self)) and operand.name == self.name
 
@@ -320,14 +322,14 @@ class DeployedBranchDict(collections.Mapping):
     """The mapping of deployed branches and commits."""
 
     def __init__(self, app):
-        self.app = weakref.ref(app)
+        self.app = app
         self.refresh()
 
     def refresh(self):
         self.branches = None
 
     def itertags(self):
-        app = self.app()
+        app = self.app
         try:
             reservations = app.ec2_connection.get_all_instances(
                 filters={'tag:App': app.name}
@@ -364,7 +366,7 @@ class DeployedBranchDict(collections.Mapping):
         else:
             labels = self.branches
         for label in labels:
-            yield find_by_label(self.app(), label)
+            yield find_by_label(self.app, label)
 
     def __getitem__(self, branch):
         from .branch import Branch
@@ -384,4 +386,4 @@ class DeployedBranchDict(collections.Mapping):
             except KeyError:
                 raise KeyError(branch)
         from .commit import Commit
-        return Commit(self.app(), commit)
+        return Commit(self.app, commit)
