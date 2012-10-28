@@ -47,7 +47,7 @@
           <a href="logger.html" title="asuka.logger — Utilities for using logging"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -62,6 +62,24 @@
 <dt id="asuka.service.DomainService">
 <em class="property">class </em><tt class="descclassname">asuka.service.</tt><tt class="descname">DomainService</tt><big>(</big><em>build</em>, <em>name</em>, <em>config={}</em>, <em>required_apt_repositories=frozenset([])</em>, <em>required_apt_packages=frozenset([])</em>, <em>required_python_packages=frozenset([])</em>, <em>pre_install=</em><span class="optional">[</span><span class="optional">]</span>, <em>post_install=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#asuka.service.DomainService" title="Permalink to this definition">¶</a></dt>
 <dd><p>The service subtype mixin which provides domain routing.</p>
+<dl class="method">
+<dt id="asuka.service.DomainService.remove_domain">
+<tt class="descname">remove_domain</tt><big>(</big><em>name</em>, <em>records</em><big>)</big><a class="headerlink" href="#asuka.service.DomainService.remove_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the records for the service from the zone.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the full domain name to deregister</li>
+<li><strong>records</strong> (<a class="reference external" href="http://docs.pythonboto.org/en/latest/ref/route53.html#boto.route53.record.ResourceRecordSets" title="(in boto v2.6.0-dev)"><tt class="xref py py-class docutils literal"><span class="pre">boto.route53.record.ResourceRecordSets</span></tt></a>) &#8211; the record changeset</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="asuka.service.DomainService.route_domain">
 <tt class="descname">route_domain</tt><big>(</big><em>name</em>, <em>records</em><big>)</big><a class="headerlink" href="#asuka.service.DomainService.route_domain" title="Permalink to this definition">¶</a></dt>
@@ -91,7 +109,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>app</strong> (<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) &#8211; the application object</li>
+<li><strong>build</strong> (<a class="reference internal" href="build.html#asuka.build.BaseBuild" title="asuka.build.BaseBuild"><tt class="xref py py-class docutils literal"><span class="pre">BaseBuild</span></tt></a>) &#8211; the build object</li>
 <li><strong>name</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the service name</li>
 <li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; the config mapping object</li>
 <li><strong>required_apt_repositories</strong> &#8211; the set of APT repositories
@@ -108,7 +126,7 @@ elements have to be PyPI names</li>
 </table>
 <dl class="attribute">
 <dt id="asuka.service.Service.NAME_PATTERN">
-<tt class="descname">NAME_PATTERN</tt><em class="property"> = &lt;SRE_Pattern object at 0x0000000106858ca0&gt;</em><a class="headerlink" href="#asuka.service.Service.NAME_PATTERN" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">NAME_PATTERN</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x1103efb70&gt;</em><a class="headerlink" href="#asuka.service.Service.NAME_PATTERN" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="http://docs.python.org/library/re.html#re.RegexObject" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">re.RegexObject</span></tt></a>) The pattern of the valid service name.</p>
 </dd></dl>
 
@@ -116,6 +134,12 @@ elements have to be PyPI names</li>
 <dt id="asuka.service.Service.app">
 <tt class="descname">app</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.app" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) The application object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.service.Service.branch">
+<tt class="descname">branch</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.service.Service.branch" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="branch.html#asuka.branch.Branch" title="asuka.branch.Branch"><tt class="xref py py-class docutils literal"><span class="pre">Branch</span></tt></a>) The branch object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -201,6 +225,12 @@ can take e.g.:</p>
 to install e.g. <tt class="docutils literal"><span class="pre">frozenset(['Werkzeug',</span> <span class="pre">'chardet'])</span></tt>.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="asuka.service.Service.uninstall">
+<tt class="descname">uninstall</tt><big>(</big><big>)</big><a class="headerlink" href="#asuka.service.Service.uninstall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uninstalls the service.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -213,7 +243,7 @@ to install e.g. <tt class="docutils literal"><span class="pre">frozenset(['Werkz
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="logger.html"
-                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">asuka.logger</span></tt> &#8212; Utilities for using <tt class="docutils literal docutils literal"><span class="pre">logging</span></tt></a></p>
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.logger</span></tt> &#8212; Utilities for using <tt class="docutils literal docutils literal docutils literal"><span class="pre">logging</span></tt></a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="services.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">asuka.services</span></tt> &#8212; Service implementations</a></p>
@@ -255,7 +285,7 @@ to install e.g. <tt class="docutils literal"><span class="pre">frozenset(['Werkz
           <a href="logger.html" title="asuka.logger — Utilities for using logging"
              >previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -57,7 +57,9 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
@@ -67,6 +69,8 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
@@ -75,10 +79,14 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="asuka/build.html#asuka.build.Build.app">app (asuka.build.Build attribute)</a>
+  <dt><a href="asuka/branch.html#asuka.branch.Branch.app">app (asuka.branch.Branch attribute)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.app">(asuka.build.BaseBuild attribute)</a>
+  </dt>
+
         
   <dt><a href="asuka/commit.html#asuka.commit.Commit.app">(asuka.commit.Commit attribute)</a>
   </dt>
@@ -93,6 +101,10 @@
 
         
   <dt><a href="asuka/service.html#asuka.service.Service.app">(asuka.service.Service attribute)</a>
+  </dt>
+
+        
+  <dt><a href="asuka/web.html#asuka.web.WebApp.app">(asuka.web.WebApp attribute)</a>
   </dt>
 
       </dl></dd>
@@ -121,6 +133,10 @@
   </dt>
 
       
+  <dt><a href="asuka/branch.html#module-asuka.branch">asuka.branch (module)</a>
+  </dt>
+
+      
   <dt><a href="asuka/build.html#module-asuka.build">asuka.build (module)</a>
   </dt>
 
@@ -128,12 +144,12 @@
   <dt><a href="asuka/commit.html#module-asuka.commit">asuka.commit (module)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/config.html#module-asuka.config">asuka.config (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/dist.html#module-asuka.dist">asuka.dist (module)</a>
   </dt>
@@ -162,6 +178,18 @@
   <dt><a href="asuka/version.html#module-asuka.version">asuka.version (module)</a>
   </dt>
 
+      
+  <dt><a href="asuka/web.html#module-asuka.web">asuka.web (module)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/web.html#asuka.web.auth_required">auth_required() (in module asuka.web)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/web.html#asuka.web.authorize">authorize() (in module asuka.web)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -169,11 +197,33 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="asuka/service.html#asuka.service.Service.build">build (asuka.service.Service attribute)</a>
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild">BaseBuild (class in asuka.build)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.branch">branch (asuka.build.BaseBuild attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="asuka/dist.html#asuka.dist.Dist.branch">(asuka.dist.Dist attribute)</a>
+  </dt>
+
+        
+  <dt><a href="asuka/service.html#asuka.service.Service.branch">(asuka.service.Service attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="asuka/branch.html#asuka.branch.Branch">Branch (class in asuka.branch)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/service.html#asuka.service.Service.build">build (asuka.service.Service attribute)</a>
+  </dt>
+
       
   <dt><a href="asuka/build.html#asuka.build.Build">Build (class in asuka.build)</a>
   </dt>
@@ -189,7 +239,7 @@
   </dt>
 
       
-  <dt><a href="asuka/build.html#asuka.build.Build.commit">commit (asuka.build.Build attribute)</a>
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.commit">commit (asuka.build.BaseBuild attribute)</a>
   </dt>
 
       <dd><dl>
@@ -206,18 +256,26 @@
   <dt><a href="asuka/commit.html#asuka.commit.Commit">Commit (class in asuka.commit)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/commit.html#asuka.commit.Commit.committed_at">committed_at (asuka.commit.Commit attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/service.html#asuka.service.Service.config">config (asuka.service.Service attribute)</a>
   </dt>
 
       
   <dt><a href="asuka/app.html#asuka.app.App.config_dir">config_dir (asuka.app.App attribute)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/app.html#asuka.app.App.consistent_secret">consistent_secret (asuka.app.App attribute)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/app.html#asuka.app.App.create_instance">create_instance() (asuka.app.App method)</a>
   </dt>
 
   </dl></td>
@@ -227,25 +285,25 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="asuka/build.html#asuka.build.Build.dist">dist (asuka.build.Build attribute)</a>
+  <dt><a href="asuka/web.html#asuka.web.delegate">delegate() (in module asuka.web)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.dist">dist (asuka.build.BaseBuild attribute)</a>
   </dt>
 
       
   <dt><a href="asuka/dist.html#asuka.dist.Dist">Dist (class in asuka.dist)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/instance.html#asuka.instance.Instance.do">do() (asuka.instance.Instance method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/service.html#asuka.service.DomainService">DomainService (class in asuka.service)</a>
-  </dt>
-
-      
-  <dt><a href="asuka/commit.html#asuka.commit.Commit.download">download() (asuka.commit.Commit method)</a>
   </dt>
 
   </dl></td>
@@ -259,11 +317,43 @@
   </dt>
 
   </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/app.html#asuka.app.App.ec2_security_groups">ec2_security_groups (asuka.app.App attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/branch.html#asuka.branch.Branch.fetch">fetch() (asuka.branch.Branch method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.fetch">(asuka.build.BaseBuild method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/app.html#asuka.app.App.finish_hook_urls">finish_hook_urls (asuka.app.App attribute)</a>
+  </dt>
+
+  </dl></td>
 </tr></table>
 
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/app.html#asuka.app.App.get_clone_url">get_clone_url() (asuka.app.App method)</a>
+  </dt>
+
       
   <dt><a href="asuka/instance.html#asuka.instance.Instance.get_file">get_file() (asuka.instance.Instance method)</a>
   </dt>
@@ -276,14 +366,36 @@
   <dt><a href="asuka/logger.html#asuka.logger.LoggerProviderMixin.get_logger_name">get_logger_name() (asuka.logger.LoggerProviderMixin method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/commit.html#asuka.commit.Commit.git_commit">git_commit (asuka.commit.Commit attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/app.html#asuka.app.App.github">github (asuka.app.App attribute)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/app.html#asuka.app.App.github_client_id">github_client_id (asuka.app.App attribute)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/app.html#asuka.app.App.github_client_secret">github_client_secret (asuka.app.App attribute)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/branch.html#asuka.branch.GitMergeError">GitMergeError</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/web.html#asuka.web.home">home() (in module asuka.web)</a>
   </dt>
 
   </dl></td>
@@ -292,6 +404,10 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/web.html#asuka.web.WebApp.initialized_app_class">initialized_app_class (asuka.web.WebApp attribute)</a>
+  </dt>
+
       
   <dt><a href="asuka/build.html#asuka.build.Build.install">install() (asuka.build.Build method)</a>
   </dt>
@@ -302,6 +418,8 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/build.html#asuka.build.Build.instance">instance (asuka.build.Build attribute)</a>
   </dt>
@@ -312,8 +430,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/instance.html#asuka.instance.Instance">Instance (class in asuka.instance)</a>
   </dt>
@@ -345,6 +461,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="asuka/branch.html#asuka.branch.Branch.label">label (asuka.branch.Branch attribute)</a>
+  </dt>
+
+      
   <dt><a href="asuka/logger.html#asuka.logger.LoggerProviderMixin">LoggerProviderMixin (class in asuka.logger)</a>
   </dt>
 
@@ -364,6 +484,16 @@
   <dt><a href="asuka/instance.html#asuka.instance.Instance.make_directory">make_directory() (asuka.instance.Instance method)</a>
   </dt>
 
+      
+  <dt><a href="asuka/instance.html#asuka.instance.Instance.metadata">metadata (asuka.instance.Instance attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/instance.html#asuka.instance.Metadata">Metadata (class in asuka.instance)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -375,6 +505,10 @@
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="asuka/branch.html#asuka.branch.Branch.name">(asuka.branch.Branch attribute)</a>
+  </dt>
+
         
   <dt><a href="asuka/service.html#asuka.service.Service.name">(asuka.service.Service attribute)</a>
   </dt>
@@ -403,6 +537,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="asuka/web.html#asuka.web.WebApp.pool">pool (asuka.web.WebApp attribute)</a>
+  </dt>
+
+      
   <dt><a href="asuka/service.html#asuka.service.Service.post_install">post_install (asuka.service.Service attribute)</a>
   </dt>
 
@@ -420,6 +558,14 @@
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/branch.html#asuka.branch.PullRequest.pull_request">pull_request (asuka.branch.PullRequest attribute)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/branch.html#asuka.branch.PullRequest">PullRequest (class in asuka.branch)</a>
+  </dt>
+
       
   <dt><a href="asuka/instance.html#asuka.instance.Instance.put_directory">put_directory() (asuka.instance.Instance method)</a>
   </dt>
@@ -451,6 +597,14 @@
   </dt>
 
       
+  <dt><a href="asuka/instance.html#asuka.instance.REGION_AMI_MAP">REGION_AMI_MAP (in module asuka.instance)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/service.html#asuka.service.DomainService.remove_domain">remove_domain() (asuka.service.DomainService method)</a>
+  </dt>
+
+      
   <dt><a href="asuka/instance.html#asuka.instance.Instance.remove_file">remove_file() (asuka.instance.Instance method)</a>
   </dt>
 
@@ -462,12 +616,18 @@
   <dt><a href="asuka/app.html#asuka.app.App.repository">repository (asuka.app.App attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="asuka/branch.html#asuka.branch.Branch.repository">(asuka.branch.Branch attribute)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/service.html#asuka.service.Service.required_apt_packages">required_apt_packages (asuka.service.Service attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/service.html#asuka.service.Service.required_apt_repositories">required_apt_repositories (asuka.service.Service attribute)</a>
   </dt>
@@ -503,11 +663,11 @@
   </dt>
 
       
-  <dt><a href="asuka/build.html#asuka.build.Build.SERVICE_FILENAME_PATTERN">SERVICE_FILENAME_PATTERN (asuka.build.Build attribute)</a>
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.SERVICE_FILENAME_PATTERN">SERVICE_FILENAME_PATTERN (asuka.build.BaseBuild attribute)</a>
   </dt>
 
       
-  <dt><a href="asuka/build.html#asuka.build.Build.services">services (asuka.build.Build attribute)</a>
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.services">services (asuka.build.BaseBuild attribute)</a>
   </dt>
 
   </dl></td>
@@ -517,7 +677,37 @@
   </dt>
 
       
+  <dt><a href="asuka/app.html#asuka.app.App.start_hook_urls">start_hook_urls (asuka.app.App attribute)</a>
+  </dt>
+
+      
   <dt><a href="asuka/instance.html#asuka.instance.Instance.sudo">sudo() (asuka.instance.Instance method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/build.html#asuka.build.BaseBuild.terminate_instances">terminate_instances() (asuka.build.BaseBuild method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/service.html#asuka.service.Service.uninstall">uninstall() (asuka.service.Service method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="asuka/app.html#asuka.app.App.url_base">url_base (asuka.app.App attribute)</a>
   </dt>
 
   </dl></td>
@@ -544,6 +734,10 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="asuka/instance.html#asuka.instance.Instance.wait_state">wait_state() (asuka.instance.Instance method)</a>
+  </dt>
+
+      
+  <dt><a href="asuka/web.html#asuka.web.WebApp">WebApp (class in asuka.web)</a>
   </dt>
 
   </dl></td>

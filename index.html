@@ -72,12 +72,30 @@ the upstream (master).  Fortunately GitHub has made it very easy:
 schema, in a minute at least.</li>
 </ul>
 </div>
+<div class="section" id="how-to-install">
+<h2>How to install<a class="headerlink" href="#how-to-install" title="Permalink to this headline">¶</a></h2>
+<p>Use <strong class="program">pip</strong> or <strong class="program">easy_install</strong>:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> pip install git+git://github.com/crosspop/asuka.git#egg<span class="o">=</span>Asuka-0.1.0
+<span class="gp">$</span> easy_install https://github.com/crosspop/asuka/tarball/master#egg<span class="o">=</span>Asuka
+</pre></div>
+</div>
+</div>
+<div class="section" id="how-to-run-server">
+<h2>How to run server<a class="headerlink" href="#how-to-run-server" title="Permalink to this headline">¶</a></h2>
+<p>It installs <strong class="program">asuka-server</strong> command on your system.
+Makes a configuration file (it uses YAML) first by copying <tt class="file docutils literal"><span class="pre">sample.yml</span></tt>,
+and then pass it to <strong class="program">asuka-server</strong> command:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> asuka-server yourapp.yml
+</pre></div>
+</div>
+</div>
 <div class="section" id="reference">
 <h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="asuka.html"><tt class="docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="asuka/app.html"><tt class="docutils literal"><span class="pre">asuka.app</span></tt> &#8212; Application configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="asuka/branch.html"><tt class="docutils literal"><span class="pre">asuka.branch</span></tt> &#8212; Branches</a></li>
 <li class="toctree-l2"><a class="reference internal" href="asuka/build.html"><tt class="docutils literal"><span class="pre">asuka.build</span></tt> &#8212; Each build of features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="asuka/commit.html"><tt class="docutils literal"><span class="pre">asuka.commit</span></tt> &#8212; Git commits</a></li>
 <li class="toctree-l2"><a class="reference internal" href="asuka/config.html"><tt class="docutils literal"><span class="pre">asuka.config</span></tt> &#8212; Application configuration</a></li>
@@ -87,6 +105,7 @@ schema, in a minute at least.</li>
 <li class="toctree-l2"><a class="reference internal" href="asuka/service.html"><tt class="docutils literal"><span class="pre">asuka.service</span></tt> &#8212; Service interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="asuka/services.html"><tt class="docutils literal"><span class="pre">asuka.services</span></tt> &#8212; Service implementations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="asuka/version.html"><tt class="docutils literal"><span class="pre">asuka.version</span></tt> &#8212; Version data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="asuka/web.html"><tt class="docutils literal"><span class="pre">asuka.web</span></tt> &#8212; Web frontend</a></li>
 </ul>
 </li>
 </ul>
@@ -112,6 +131,8 @@ schema, in a minute at least.</li>
   <ul>
 <li><a class="reference internal" href="#">アスカ</a><ul>
 <li><a class="reference internal" href="#motivation">Motivation</a></li>
+<li><a class="reference internal" href="#how-to-install">How to install</a></li>
+<li><a class="reference internal" href="#how-to-run-server">How to run server</a></li>
 <li><a class="reference internal" href="#reference">Reference</a><ul>
 </ul>
 </li>
@@ -122,7 +143,7 @@ schema, in a minute at least.</li>
 
   <h4>Next topic</h4>
   <p class="topless"><a href="asuka.html"
-                        title="next chapter"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a></p>
+                        title="next chapter"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"

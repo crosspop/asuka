@@ -40,6 +40,29 @@ Here's the list of missions we target:
 __ https://github.com/blog/1241-deploying-at-github
 
 
+How to install
+--------------
+
+Use :program:`pip` or :program:`easy_install`:
+
+.. sourcecode:: console
+
+   $ pip install git+git://github.com/crosspop/asuka.git#egg=Asuka-0.1.0
+   $ easy_install https://github.com/crosspop/asuka/tarball/master#egg=Asuka
+
+
+How to run server
+-----------------
+
+It installs :program:`asuka-server` command on your system.
+Makes a configuration file (it uses YAML) first by copying :file:`sample.yml`,
+and then pass it to :program:`asuka-server` command:
+
+.. sourcecode:: console
+
+   $ asuka-server yourapp.yml
+
+
 Reference
 ---------
 

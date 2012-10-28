@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="Asuka 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="asuka — Asuka" href="../asuka.html" />
-    <link rel="next" title="asuka.build — Each build of features" href="build.html" />
+    <link rel="next" title="asuka.branch — Branches" href="branch.html" />
     <link rel="prev" title="asuka — Asuka" href="../asuka.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="build.html" title="asuka.build — Each build of features"
+          <a href="branch.html" title="asuka.branch — Branches"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../asuka.html" title="asuka — Asuka"
@@ -77,6 +77,32 @@ in the repository.  The default uses <tt class="file docutils literal"><span cla
 </dd></dl>
 
 <dl class="attribute">
+<dt id="asuka.app.App.consistent_secret">
+<tt class="descname">consistent_secret</tt><a class="headerlink" href="#asuka.app.App.consistent_secret" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) The secret key consistent for every deployment
+of the app.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asuka.app.App.create_instance">
+<tt class="descname">create_instance</tt><big>(</big><em>instance_type='t1.micro'</em><big>)</big><a class="headerlink" href="#asuka.app.App.create_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new instance to deploy the application.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>instance_type</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the ec2 instance type.
+default is <tt class="docutils literal"><span class="pre">'t1.micro'</span></tt></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the created new instance</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="instance.html#asuka.instance.Instance" title="asuka.instance.Instance"><tt class="xref py py-class docutils literal"><span class="pre">asuka.instance.Instance</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="asuka.app.App.ec2_connection">
 <tt class="descname">ec2_connection</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.app.App.ec2_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="http://docs.pythonboto.org/en/latest/ref/ec2.html#boto.ec2.connection.EC2Connection" title="(in boto v2.6.0-dev)"><tt class="xref py py-class docutils literal"><span class="pre">boto.ec2.connection.EC2Connection</span></tt></a>) The EC2 connection
@@ -84,10 +110,55 @@ to invoke APIs.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="asuka.app.App.ec2_security_groups">
+<tt class="descname">ec2_security_groups</tt><em class="property"> = frozenset([])</em><a class="headerlink" href="#asuka.app.App.ec2_security_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Set" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt></a>) The set of security groups EC2 instances
+to use.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.finish_hook_urls">
+<tt class="descname">finish_hook_urls</tt><em class="property"> = []</em><a class="headerlink" href="#asuka.app.App.finish_hook_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) The list of hook urls requested
+when the build has finished.  These urls are requested in the order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asuka.app.App.get_clone_url">
+<tt class="descname">get_clone_url</tt><big>(</big><em>repository=None</em><big>)</big><a class="headerlink" href="#asuka.app.App.get_clone_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes an authenticated clone url of the GitHub repository.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>repository</strong> (<a class="reference external" href="https://github3py.readthedocs.org/en/latest/repos.html#github3.repos.Repository" title="(in github3.py v0.1b0)"><tt class="xref py py-class docutils literal"><span class="pre">github3.repos.Repository</span></tt></a>) &#8211; the repository to clone.
+default is <a class="reference internal" href="#asuka.app.App.repository" title="asuka.app.App.repository"><tt class="xref py py-attr docutils literal"><span class="pre">repository</span></tt></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the clone url</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="asuka.app.App.github">
 <tt class="descname">github</tt><a class="headerlink" href="#asuka.app.App.github" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="https://github3py.readthedocs.org/en/latest/github.html#github3.github.GitHub" title="(in github3.py v0.1b0)"><tt class="xref py py-class docutils literal"><span class="pre">github3.GitHub</span></tt></a>) The GitHub
 connection.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.github_client_id">
+<tt class="descname">github_client_id</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.app.App.github_client_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) The client ID of the GitHub app.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.github_client_secret">
+<tt class="descname">github_client_secret</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.app.App.github_client_secret" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) The client secret key of the GitHub app.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -148,6 +219,21 @@ mapped domain name format strings
 e.g. <tt class="docutils literal"><span class="pre">{'web':</span> <span class="pre">'{feature:branch-,pull-}.test.example.com.'}</span></tt>.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="asuka.app.App.start_hook_urls">
+<tt class="descname">start_hook_urls</tt><em class="property"> = []</em><a class="headerlink" href="#asuka.app.App.start_hook_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) The list of hook urls requested
+when the build has started.  These urls are requested in the order.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.app.App.url_base">
+<tt class="descname">url_base</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.app.App.url_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The URL without any path of the web frontend
+e.g. <tt class="docutils literal"><span class="pre">'http://example.com'</span></tt>.  Note that there&#8217;s no trailing
+slash.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -162,8 +248,8 @@ e.g. <tt class="docutils literal"><span class="pre">{'web':</span> <span class="
   <p class="topless"><a href="../asuka.html"
                         title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="build.html"
-                        title="next chapter"><tt class="docutils literal"><span class="pre">asuka.build</span></tt> &#8212; Each build of features</a></p>
+  <p class="topless"><a href="branch.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">asuka.branch</span></tt> &#8212; Branches</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/asuka/app.txt"
@@ -196,7 +282,7 @@ e.g. <tt class="docutils literal"><span class="pre">{'web':</span> <span class="
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="build.html" title="asuka.build — Each build of features"
+          <a href="branch.html" title="asuka.branch — Branches"
              >next</a> |</li>
         <li class="right" >
           <a href="../asuka.html" title="asuka — Asuka"

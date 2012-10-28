@@ -47,7 +47,7 @@
           <a href="dist.html" title="asuka.dist — Package distribution"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -58,6 +58,13 @@
             
   <span class="target" id="module-asuka.instance"></span><div class="section" id="asuka-instance-instances">
 <h1><a class="reference internal" href="#module-asuka.instance" title="asuka.instance"><tt class="xref py py-mod docutils literal"><span class="pre">asuka.instance</span></tt></a> &#8212; Instances<a class="headerlink" href="#asuka-instance-instances" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="asuka.instance.REGION_AMI_MAP">
+<tt class="descclassname">asuka.instance.</tt><tt class="descname">REGION_AMI_MAP</tt><em class="property"> = ImmutableDict({'ap-southeast-1': 'ami-a4ca8df6', 'us-west-2': 'ami-20800c10', 'us-east-1': 'ami-a29943cb', 'ap-northeast-1': 'ami-60c77761', 'us-west-1': 'ami-87712ac2', 'sa-east-1': 'ami-8cd80691', 'eu-west-1': 'ami-e1e8d395'})</em><a class="headerlink" href="#asuka.instance.REGION_AMI_MAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) The mapping of regions to Ubuntu
+AMIs.</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="asuka.instance.Instance">
 <em class="property">class </em><tt class="descclassname">asuka.instance.</tt><tt class="descname">Instance</tt><big>(</big><em>app</em>, <em>instance</em>, <em>login</em><big>)</big><a class="headerlink" href="#asuka.instance.Instance" title="Permalink to this definition">¶</a></dt>
@@ -105,7 +112,7 @@ method:</p>
     <span class="n">instance</span><span class="o">.</span><span class="n">do</span><span class="p">(</span><span class="s">&#39;echo 1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>&#8212; but you don&#8217;t have to of course.</p>
+<p>&#8212; but you don&#8217;t have to do like that of course.</p>
 <dl class="attribute">
 <dt id="asuka.instance.Instance.app">
 <tt class="descname">app</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.instance.Instance.app" title="Permalink to this definition">¶</a></dt>
@@ -192,6 +199,12 @@ e.g. <tt class="docutils literal"><span class="pre">0755</span></tt></li>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.instance.Instance.metadata">
+<tt class="descname">metadata</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.instance.Instance.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="#asuka.instance.Metadata" title="asuka.instance.Metadata"><tt class="xref py py-class docutils literal"><span class="pre">Metadata</span></tt></a>) The tags mapping of the instance.</p>
 </dd></dl>
 
 <dl class="method">
@@ -323,7 +336,7 @@ by superuser.</p>
 
 <dl class="method">
 <dt id="asuka.instance.Instance.wait_state">
-<tt class="descname">wait_state</tt><big>(</big><em>state='running'</em>, <em>timeout=60</em>, <em>tick=5</em><big>)</big><a class="headerlink" href="#asuka.instance.Instance.wait_state" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">wait_state</tt><big>(</big><em>state='running'</em>, <em>timeout=90</em>, <em>tick=5</em><big>)</big><a class="headerlink" href="#asuka.instance.Instance.wait_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Waits until the instance state becomes to the given
 goal <tt class="docutils literal"><span class="pre">state</span></tt> (default is <tt class="docutils literal"><span class="pre">'running'</span></tt>).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -332,7 +345,7 @@ goal <tt class="docutils literal"><span class="pre">state</span></tt> (default i
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>state</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the goal state to wait.  default is <tt class="docutils literal"><span class="pre">'running'</span></tt></li>
-<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/numbers.html#numbers.Real" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">numbers.Real</span></tt></a>) &#8211; the timeout in seconds.  default is 60 seconds</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/numbers.html#numbers.Real" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">numbers.Real</span></tt></a>) &#8211; the timeout in seconds.  default is 90 seconds</li>
 <li><strong>tick</strong> (<a class="reference external" href="http://docs.python.org/library/numbers.html#numbers.Real" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">numbers.Real</span></tt></a>) &#8211; the tick seconds to refresh.  default is 5 seconds</li>
 </ul>
 </td>
@@ -363,6 +376,22 @@ Useful for saving configuration files.</p>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="asuka.instance.Metadata">
+<em class="property">class </em><tt class="descclassname">asuka.instance.</tt><tt class="descname">Metadata</tt><big>(</big><em>instance</em><big>)</big><a class="headerlink" href="#asuka.instance.Metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metadata tags on the instances.  It can be obtained by
+<tt class="xref py py-attr docutils literal"><span class="pre">Instance.tags</span></tt>.  It behaves like <a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></a> (in other
+words, implements <a class="reference external" href="http://docs.python.org/library/collections.html#collections.MutableMapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.MutableMapping</span></tt></a>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>instance</strong> (<a class="reference internal" href="#asuka.instance.Instance" title="asuka.instance.Instance"><tt class="xref py py-class docutils literal"><span class="pre">Instance</span></tt></a>) &#8211; the instance that metadata belongs to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 
@@ -373,7 +402,7 @@ Useful for saving configuration files.</p>
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="dist.html"
-                        title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">asuka.dist</span></tt> &#8212; Package distribution</a></p>
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.dist</span></tt> &#8212; Package distribution</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="logger.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">asuka.logger</span></tt> &#8212; Utilities for using <tt class="docutils literal"><span class="pre">logging</span></tt></a></p>
@@ -415,7 +444,7 @@ Useful for saving configuration files.</p>
           <a href="dist.html" title="asuka.dist — Package distribution"
              >previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

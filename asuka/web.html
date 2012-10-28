@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>asuka.web — Web frontend &mdash; Asuka 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Asuka 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="asuka — Asuka" href="../asuka.html" />
+    <link rel="prev" title="asuka.version — Version data" href="version.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="version.html" title="asuka.version — Version data"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-asuka.web"></span><div class="section" id="asuka-web-web-frontend">
+<h1><a class="reference internal" href="#module-asuka.web" title="asuka.web"><tt class="xref py py-mod docutils literal"><span class="pre">asuka.web</span></tt></a> &#8212; Web frontend<a class="headerlink" href="#asuka-web-web-frontend" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="asuka.web.WebApp">
+<em class="property">class </em><tt class="descclassname">asuka.web.</tt><tt class="descname">WebApp</tt><big>(</big><em>app</em>, <em>config={}</em><big>)</big><a class="headerlink" href="#asuka.web.WebApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>WSGI-compliant web frontend of Asuka.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>app</strong> (<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">asuka.app.App</span></tt></a>) &#8211; the application object</li>
+<li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; an optional config dict</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="asuka.web.WebApp.app">
+<tt class="descname">app</tt><a class="headerlink" href="#asuka.web.WebApp.app" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">asuka.app.App</span></tt></a>) The application object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.web.WebApp.initialized_app_class">
+<tt class="descname">initialized_app_class</tt><a class="headerlink" href="#asuka.web.WebApp.initialized_app_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#asuka.web.WebApp" title="asuka.web.WebApp"><tt class="xref py py-class docutils literal"><span class="pre">WebApp</span></tt></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.web.WebApp.pool">
+<tt class="descname">pool</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.web.WebApp.pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">multiprocessing.Pool</span></tt>) The multiprocessing pool.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="asuka.web.auth_required">
+<tt class="descclassname">asuka.web.</tt><tt class="descname">auth_required</tt><big>(</big><em>function</em><big>)</big><a class="headerlink" href="#asuka.web.auth_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The decorator which makes the given view <tt class="docutils literal"><span class="pre">function</span></tt> to require
+authorization.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@WebApp.route</span><span class="p">(</span><span class="s">&#39;/path/&#39;</span><span class="p">)</span>
+<span class="nd">@auth_required</span>
+<span class="k">def</span> <span class="nf">view_func</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&#39;authorized: &#39;</span> <span class="o">+</span> <span class="n">request</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">github_login</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="asuka.web.authorize">
+<tt class="descclassname">asuka.web.</tt><tt class="descname">authorize</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#asuka.web.authorize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authorizes the user using GitHub OAuth 2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asuka.web.delegate">
+<tt class="descclassname">asuka.web.</tt><tt class="descname">delegate</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#asuka.web.delegate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delegated authentication for deployed web apps.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="asuka.web.home">
+<tt class="descclassname">asuka.web.</tt><tt class="descname">home</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#asuka.web.home" title="Permalink to this definition">¶</a></dt>
+<dd><p>The home page.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="version.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.version</span></tt> &#8212; Version data</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/asuka/web.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="version.html" title="asuka.version — Version data"
+             >previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Hong Minhee.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

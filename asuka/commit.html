@@ -28,7 +28,7 @@
     <link rel="top" title="Asuka 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="asuka — Asuka" href="../asuka.html" />
     <link rel="next" title="asuka.config — Application configuration" href="config.html" />
-    <link rel="prev" title="asuka.build — Each build of features" href="build.html" /> 
+    <link rel="prev" title="&lt;no title&gt;" href="cli.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,10 +44,10 @@
           <a href="config.html" title="asuka.config — Application configuration"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="build.html" title="asuka.build — Each build of features"
+          <a href="cli.html" title="&lt;no title&gt;"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -76,7 +76,7 @@
 </table>
 <dl class="attribute">
 <dt id="asuka.commit.Commit.REF_PATTERN">
-<tt class="descname">REF_PATTERN</tt><em class="property"> = &lt;SRE_Pattern object at 0x0000000106a0b7a0&gt;</em><a class="headerlink" href="#asuka.commit.Commit.REF_PATTERN" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">REF_PATTERN</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x11029bdf0&gt;</em><a class="headerlink" href="#asuka.commit.Commit.REF_PATTERN" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="http://docs.python.org/library/re.html#re.RegexObject" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">re.RegexObject</span></tt></a>) The regular expression pattern to match
 valid ref ids.</p>
 </dd></dl>
@@ -92,21 +92,6 @@ valid ref ids.</p>
 <tt class="descname">committed_at</tt><a class="headerlink" href="#asuka.commit.Commit.committed_at" title="Permalink to this definition">¶</a></dt>
 <dd><p>(<a class="reference external" href="http://docs.python.org/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">datetime.datetime</span></tt></a>) The tz-aware time the commit
 was made.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="asuka.commit.Commit.download">
-<tt class="descname">download</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#asuka.commit.Commit.download" title="Permalink to this definition">¶</a></dt>
-<dd><p>Downloads the source tree and yields the path of the tree
-managed by context.</p>
-<p>Usage:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os.path</span>
-
-<span class="k">with</span> <span class="n">ref</span><span class="o">.</span><span class="n">download</span><span class="p">()</span> <span class="k">as</span> <span class="n">tree_path</span><span class="p">:</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tree_path</span><span class="p">,</span> <span class="s">&#39;setup.py&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">setup</span><span class="p">:</span>
-        <span class="n">setup_script</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="attribute">
@@ -139,8 +124,8 @@ It guarantees always full ref id.</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="build.html"
-                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.build</span></tt> &#8212; Each build of features</a></p>
+  <p class="topless"><a href="cli.html"
+                        title="previous chapter">&lt;no title&gt;</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="config.html"
                         title="next chapter"><tt class="docutils literal"><span class="pre">asuka.config</span></tt> &#8212; Application configuration</a></p>
@@ -179,10 +164,10 @@ It guarantees always full ref id.</p>
           <a href="config.html" title="asuka.config — Application configuration"
              >next</a> |</li>
         <li class="right" >
-          <a href="build.html" title="asuka.build — Each build of features"
+          <a href="cli.html" title="&lt;no title&gt;"
              >previous</a> |</li>
         <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
-          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

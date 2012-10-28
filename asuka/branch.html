@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>asuka.branch — Branches &mdash; Asuka 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Asuka 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="asuka — Asuka" href="../asuka.html" />
+    <link rel="next" title="asuka.build — Each build of features" href="build.html" />
+    <link rel="prev" title="asuka.app — Application configuration" href="app.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="build.html" title="asuka.build — Each build of features"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="app.html" title="asuka.app — Application configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" accesskey="U"><tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-asuka.branch"></span><div class="section" id="asuka-branch-branches">
+<h1><a class="reference internal" href="#module-asuka.branch" title="asuka.branch"><tt class="xref py py-mod docutils literal"><span class="pre">asuka.branch</span></tt></a> &#8212; Branches<a class="headerlink" href="#asuka-branch-branches" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="asuka.branch.Branch">
+<em class="property">class </em><tt class="descclassname">asuka.branch.</tt><tt class="descname">Branch</tt><big>(</big><em>app</em>, <em>name</em><big>)</big><a class="headerlink" href="#asuka.branch.Branch" title="Permalink to this definition">¶</a></dt>
+<dd><p>The branch line for continous deployment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>app</strong> (<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) &#8211; the application object</li>
+<li><strong>name</strong> (<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) &#8211; the branch name e.g. <tt class="docutils literal"><span class="pre">'master'</span></tt></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="asuka.branch.Branch.app">
+<tt class="descname">app</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.branch.Branch.app" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) The application object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="asuka.branch.Branch.fetch">
+<tt class="descname">fetch</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#asuka.branch.Branch.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the source three and yields the path of the tree
+managed by context.</p>
+<p>import os.path</p>
+<dl class="docutils">
+<dt>with branch.fetch() as tree_path:</dt>
+<dd><dl class="first last docutils">
+<dt>with open(os.path.join(tree_path, &#8216;setup.py&#8217;)) as setup:</dt>
+<dd>setup_script = setup.read()</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.branch.Branch.label">
+<tt class="descname">label</tt><a class="headerlink" href="#asuka.branch.Branch.label" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) The label string readable by both human
+and machine.  It&#8217;s <strong>identifiable from other branches</strong>, so it
+can be used as subdomain name or path name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.branch.Branch.name">
+<tt class="descname">name</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.branch.Branch.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="xref py py-class docutils literal"><span class="pre">basestring</span></tt>) The branch name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="asuka.branch.Branch.repository">
+<tt class="descname">repository</tt><a class="headerlink" href="#asuka.branch.Branch.repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://github3py.readthedocs.org/en/latest/repos.html#github3.repos.Repository" title="(in github3.py v0.1b0)"><tt class="xref py py-class docutils literal"><span class="pre">github3.repos.Repository</span></tt></a>) The repository the branch
+belongs to.  If it&#8217;s from pull request, the branch may not be
+the same to the <a class="reference internal" href="#asuka.branch.Branch.app" title="asuka.branch.Branch.app"><tt class="xref py py-attr docutils literal"><span class="pre">app</span></tt></a>&#8216;s main <a class="reference internal" href="app.html#asuka.app.App.repository" title="asuka.app.App.repository"><tt class="xref py py-attr docutils literal"><span class="pre">repository</span></tt></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="asuka.branch.GitMergeError">
+<em class="property">exception </em><tt class="descclassname">asuka.branch.</tt><tt class="descname">GitMergeError</tt><a class="headerlink" href="#asuka.branch.GitMergeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>The error which rise when two Git branches cannot be merged.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="asuka.branch.PullRequest">
+<em class="property">class </em><tt class="descclassname">asuka.branch.</tt><tt class="descname">PullRequest</tt><big>(</big><em>app</em>, <em>number</em><big>)</big><a class="headerlink" href="#asuka.branch.PullRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ad-hoc branch made by pull requests.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>app</strong> (<a class="reference internal" href="app.html#asuka.app.App" title="asuka.app.App"><tt class="xref py py-class docutils literal"><span class="pre">App</span></tt></a>) &#8211; the application object</li>
+<li><strong>number</strong> (<a class="reference external" href="http://docs.python.org/library/numbers.html#numbers.Integral" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">numbers.Integral</span></tt></a>) &#8211; the pull request number</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="asuka.branch.PullRequest.pull_request">
+<tt class="descname">pull_request</tt><em class="property"> = None</em><a class="headerlink" href="#asuka.branch.PullRequest.pull_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference external" href="https://github3py.readthedocs.org/en/latest/pulls.html#github3.pulls.PullRequest" title="(in github3.py v0.1b0)"><tt class="xref py py-class docutils literal"><span class="pre">github3.pulls.PullRequest</span></tt></a>) The GitHub pull request object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="app.html"
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">asuka.app</span></tt> &#8212; Application configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="build.html"
+                        title="next chapter"><tt class="docutils literal"><span class="pre">asuka.build</span></tt> &#8212; Each build of features</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/asuka/branch.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="build.html" title="asuka.build — Each build of features"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="app.html" title="asuka.app — Application configuration"
+             >previous</a> |</li>
+        <li><a href="../index.html">Asuka 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../asuka.html" ><tt class="docutils literal docutils literal docutils literal docutils literal"><span class="pre">asuka</span></tt> &#8212; Asuka</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Hong Minhee.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
