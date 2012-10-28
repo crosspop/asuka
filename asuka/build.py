@@ -132,6 +132,7 @@ class BaseBuild(LoggerProviderMixin):
             self.app.ec2_connection.terminate_instances(instance_ids)
         except EC2ResponseError as e:
             logger.exception(e)
+        self.app.deployed_branches.refresh()
 
     def __repr__(self):
         c = type(self)
@@ -324,6 +325,7 @@ APTCACHE='/var/cache/apt/archives/'
                 changeset.commit()
         self.instance.tags['Status'] = 'done'
         self.terminate_instances()
+        self.app.deployed_branches.refresh()
         return deployed_domains
 
 

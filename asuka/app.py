@@ -2,11 +2,14 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+import collections
 import hashlib
 import io
 import re
+import weakref
 
 from boto.ec2.connection import EC2Connection
+from boto.exception import EC2ResponseError
 from boto.route53.connection import Route53Connection
 from github3.github import GitHub
 from github3.repos import Repository
@@ -16,7 +19,7 @@ from werkzeug.utils import cached_property
 
 from .instance import REGION_AMI_MAP, AMI_LOGIN_MAP, Instance
 
-__all__ = 'App',
+__all__ = 'App', 'DeployedBranchDict'
 
 
 class App(object):
@@ -70,6 +73,10 @@ class App(object):
     #: when the build has finished.  These urls are requested in the order.
     finish_hook_urls = []
 
+    #: (:class:`collections.Mapping`) The mapping of currently deployed
+    #: banches (and commits).
+    deployed_branches = []
+
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
@@ -100,6 +107,7 @@ class App(object):
         self.github_client_secret = str(self.github_client_secret)
         self.start_hook_urls = list(self.start_hook_urls)
         self.finish_hook_urls = list(self.finish_hook_urls)
+        self.deployed_branches = DeployedBranchDict(self)
 
     @property
     def private_key(self):
@@ -306,3 +314,74 @@ class App(object):
     def __repr__(self):
         c = type(self)
         return '<{0}.{1} {2!r}>'.format(c.__module__, c.__name__, self.name)
+
+
+class DeployedBranchDict(collections.Mapping):
+    """The mapping of deployed branches and commits."""
+
+    def __init__(self, app):
+        self.app = weakref.ref(app)
+        self.refresh()
+
+    def refresh(self):
+        self.branches = None
+
+    def itertags(self):
+        app = self.app()
+        try:
+            reservations = app.ec2_connection.get_all_instances(
+                filters={'tag:App': app.name}
+            )
+            self.branches = {}
+            for reserve in reservations:
+                for instance in reserve.instances:
+                    tags = instance.tags
+                    if tags.get('Status') != 'done':
+                        continue
+                    try:
+                        branch = tags['Branch']
+                        commit = tags['Commit']
+                    except KeyError:
+                        continue
+                    if branch not in self.branches:
+                        self.branches[branch] = commit
+                        yield branch, commit
+        except EC2ResponseError:
+            pass
+
+    def __len__(self):
+        if self.branches is None:
+            l = 0
+            for _ in self.itertags():
+                l += 1
+            return l
+        return len(self.branches)
+
+    def __iter__(self):
+        from .branch import find_by_label
+        if self.branches is None:
+            labels = (label for label, commit in self.itertags())
+        else:
+            labels = self.branches
+        for label in labels:
+            yield find_by_label(self.app(), label)
+
+    def __getitem__(self, branch):
+        from .branch import Branch
+        if not isinstance(branch, Branch):
+            raise TypeError('expected asuka.branch.Branch, not ' +
+                            repr(branch))
+        label = branch.label
+        if self.branches is None:
+            for branch_label, commit in self.itertags():
+                if branch_label == label:
+                    break
+            else:
+                raise KeyError(branch)
+        else:
+            try:
+                commit = self.branches[label]
+            except KeyError:
+                raise KeyError(branch)
+        from .commit import Commit
+        return Commit(self.app(), commit)
