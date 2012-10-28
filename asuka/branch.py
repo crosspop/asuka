@@ -148,27 +148,36 @@ class PullRequest(Branch):
     :type app: :class:`~asuka.app.App`
     :param number: the pull request number
     :type number: :class:`numbers.Integral`
+    :param merge_test: raise :exc:`GitMergeError` if the pull request
+                       cannot be merged.  if it's ``False`` don't
+                       test mergeability of the pull request.
+                       ``True`` by default
+    :type merge_test: :class:`bool`
+    :raises GitMergeError: if ``merge_test`` is ``True`` (default) and
+                           the pull request cannot be merged into the
+                           master branch
 
     """
 
     #: (:class:`github3.pulls.PullRequest`) The GitHub pull request object.
     pull_request = None
 
-    def __init__(self, app, number):
+    def __init__(self, app, number, merge_test=True):
         if not isinstance(number, numbers.Integral):
             raise TypeError('number must be an integer, not ' + repr(number))
         pr = app.repository.pull_request(number)
         if not pr:
             raise ValueError("pull request #{0} can't be found".format(number))
-        for x in xrange(10):
-            mergeable = pr.is_mergeable()
-            if mergeable is None or x < 2:
-                pr = app.repository.pull_request(number)
-                continue
-            break
-        if not mergeable:
-            msg = '{0!r} cannot be merged [{1!r}]'.format(pr, mergeable)
-            raise GitMergeError(msg)
+        if merge_test:
+            for x in xrange(10):
+                mergeable = pr.is_mergeable()
+                if mergeable is None or x < 2:
+                    pr = app.repository.pull_request(number)
+                    continue
+                break
+            if not mergeable:
+                msg = '{0!r} cannot be merged [{1!r}]'.format(pr, mergeable)
+                raise GitMergeError(msg)
         super(PullRequest, self).__init__(app, pr.base.ref)
         self.pull_request = pr
         self.number = number
