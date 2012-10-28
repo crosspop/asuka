@@ -220,8 +220,8 @@ def make_payload(branch, commit):
         'pull_request': {
             'number': pr and pr.number,
             'created_at': pr and pr.created_at.isoformat(),
-            'links': pr.links,
-            'title': pr.title,
+            'links': pr and pr.links,
+            'title': pr and pr.title,
             'user': {
                 'name': pr and pr.user.name,
                 'login': pr and pr.user.login
