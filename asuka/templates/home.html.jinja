@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>アスカ</title>
+  </head>
+  <body>
+    <h1>アスカ</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Branch</th>
+          <th>Commit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for branch, commit in branches.items() %}
+          <tr>
+            <th>{{ branch|safe }}</th>
+            <td><tt>{{ commit.ref }}</tt></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
+{# vim: set filetype=htmljinja ts=2 sw=2 sts=2: #}

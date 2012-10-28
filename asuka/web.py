@@ -16,6 +16,7 @@ import sys
 from github3.api import login
 from jinja2 import Environment, PackageLoader
 from plastic.app import BaseApp
+from plastic.rendering import render
 from requests import session
 from werkzeug.exceptions import BadRequest, Forbidden
 from werkzeug.urls import url_encode
@@ -156,8 +157,9 @@ def authorize(request):
 @WebApp.route('/home/')
 @auth_required
 def home(request):
-    """The home page."""
-    return 'Hi, ' + request.context.github_login
+    """The list of deployed branches."""
+    branches = request.app.app.deployed_branches
+    return render(request, branches, 'home', branches=branches)
 
 
 @WebApp.route('/hook/')
