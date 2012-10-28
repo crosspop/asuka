@@ -149,6 +149,20 @@ class Branch(LoggerProviderMixin):
     def __hash__(self):
         return hash(self.name)
 
+    @property
+    def url(self):
+        return '{0}/compare/{1}...{2}'.format(
+            self.repository.html_url,
+            self.repository.master_branch,
+            self.name
+        )
+
+    def __unicode__(self):
+        return 'Branch ' + self.name
+
+    def __html__(self):
+        return '<a href="{0}">{1}</a>'.format(self.url, unicode(self))
+
     def __repr__(self):
         c = type(self)
         if self.pull_request:
@@ -239,6 +253,13 @@ class PullRequest(Branch):
             yield path
             git('checkout "{0}"', self.name)
             git('branch -D asuka-mergedpullreq-{0}', self.number)
+
+    @property
+    def url(self):
+        return self.pull_request.html_url
+
+    def __unicode__(self):
+        return 'Pull Request #{0}'.format(self.number)
 
     def __hash__(self):
         return self.number
