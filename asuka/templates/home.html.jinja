@@ -18,6 +18,12 @@
           <tr>
             <th>{{ branch|safe }}</th>
             <td><tt>{{ commit.ref }}</tt></td>
+            <td>
+              <form action="{{ request.build_url('terminate',
+                               label=branch.label) }}" method="post">
+                <input type="submit" value="Terminate">
+              </form>
+            </td>
           </tr>
         {% endfor %}
       </tbody>

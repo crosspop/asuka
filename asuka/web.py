@@ -23,7 +23,7 @@ from werkzeug.urls import url_encode
 from werkzeug.utils import redirect
 
 from .app import App
-from .branch import Branch, PullRequest
+from .branch import Branch, PullRequest, find_by_label
 from .build import Build, Clean
 from .commit import Commit
 
@@ -85,7 +85,7 @@ jinja_env = Environment(loader=PackageLoader(__name__, WebApp.template_path))
 def render_jinja(request, path, values):
     """Renders HTML templates using Jinja2."""
     template = jinja_env.get_template(path)
-    return template.render(values)
+    return template.render(request=request, **values)
 
 
 def auth_required(function):
@@ -160,6 +160,17 @@ def home(request):
     """The list of deployed branches."""
     branches = request.app.app.deployed_branches
     return render(request, branches, 'home', branches=branches)
+
+
+@WebApp.route('/branches/<label>/terminate', methods=['POST'])
+@auth_required
+def terminate(request, label):
+    webapp = request.app
+    app = webapp.app
+    branch = find_by_label(app, label)
+    commit = app.deployed_branches[branch]
+    cleanup(webapp, commit, branch)
+    return 'Start to terminate {0!r} [{1.ref}]'.format(branch, commit)
 
 
 @WebApp.route('/hook/')
