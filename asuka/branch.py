@@ -6,6 +6,7 @@ import contextlib
 import numbers
 import os
 import os.path
+import re
 import sys
 import tempfile
 
@@ -14,7 +15,25 @@ from werkzeug.utils import cached_property
 from .app import App
 from .logger import LoggerProviderMixin
 
-__all__ = 'Branch', 'GitMergeError', 'PullRequest'
+__all__ = 'Branch', 'GitMergeError', 'PullRequest', 'find_by_label'
+
+
+def find_by_label(app, label):
+    """Finds the branch by its ``label`` string.
+
+    :param app: the application object
+    :type app: :class:`~asuka.app.App`
+    :param label: the label got from :attr:`Branch.label` property
+    :type label: :class:`str`
+
+    """
+    m = re.match(r'^branch-(.*)$', str(label))
+    if m:
+        return Branch(app, m.group(1))
+    m = re.match(r'^pull-([1-9]\d*)$', label)
+    if m:
+        return PullRequest(app, int(m.group(1)), merge_test=False)
+    raise ValueError('invalid label: ' + repr(label))
 
 
 class Branch(LoggerProviderMixin):
