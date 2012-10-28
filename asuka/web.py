@@ -14,6 +14,7 @@ import re
 import sys
 
 from github3.api import login
+from jinja2 import Environment, PackageLoader
 from plastic.app import BaseApp
 from requests import session
 from werkzeug.exceptions import BadRequest, Forbidden
@@ -66,6 +67,24 @@ class WebApp(BaseApp):
             url_base = '{0[wsgi.url_scheme]}://{0[HTTP_HOST]}'.format(environ)
             app.url_base = url_base
         return super(WebApp, self).wsgi_app(environ, start_response)
+
+
+WebApp.associate_mimetypes({
+    'text/plain': 'txt',
+    'text/html': 'html'
+})
+
+
+#: (:class:`jinja2.Environment`) The configured environment of Jinja2
+#: template engine.
+jinja_env = Environment(loader=PackageLoader(__name__, WebApp.template_path))
+
+
+@WebApp.template_engine(suffix='jinja')
+def render_jinja(request, path, values):
+    """Renders HTML templates using Jinja2."""
+    template = jinja_env.get_template(path)
+    return template.render(values)
 
 
 def auth_required(function):
