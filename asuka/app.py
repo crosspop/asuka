@@ -331,9 +331,10 @@ class DeployedBranchDict(collections.Mapping):
     def itertags(self):
         app = self.app
         try:
-            reservations = app.ec2_connection.get_all_instances(
-                filters={'tag:App': app.name}
-            )
+            reservations = app.ec2_connection.get_all_instances(filters={
+                'tag:App': app.name,
+                'instance-state-name': 'running'
+            })
             self.branches = {}
             for reserve in reservations:
                 for instance in reserve.instances:
