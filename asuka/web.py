@@ -29,6 +29,9 @@ from .commit import Commit
 
 __all__ = 'WebApp', 'auth_required', 'authorize', 'delegate', 'home', 'hook'
 
+#: (:class:`re.RegexObject`) The pattern that makes commit ignored by Asuka.
+IGNORE_PATTERN = re.compile('ASUKA\s*:\s*(SKIP|IGNORED?)*')
+
 
 class WebApp(BaseApp):
     """WSGI-compliant web frontend of Asuka.
@@ -185,6 +188,9 @@ def hook(request):
     event = request.headers['X-GitHub-Event']
     logger.info('event = %r', event)
     logger.debug('payload = %r', payload)
+    message = payload.get('head_commit', {}).get('message', '')
+    if IGNORE_PATTERN.search(message):
+        return 'ignored'
     if event == 'pull_request':
         hook_pull_request(request.app, payload)
     elif event == 'push':
