@@ -72,7 +72,15 @@ class Branch(LoggerProviderMixin):
         name = self.name
         if isinstance(name, unicode):
             name = name.encode('utf-8')
-        return 'branch-{0}'.format(name)
+        return 'branch-{0}'.format(name.replace('_', '-'))
+
+    @property
+    def label_(self):
+        """(:class:`str`) The almost same to :attr:`label` except it uses
+        underscores instead of hyphens for label.
+
+        """
+        return self.label.replace('-', '_')
 
     @property
     def repository(self):
