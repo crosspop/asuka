@@ -6,11 +6,12 @@ import re
 
 from .build import BaseBuild
 from .instance import Instance
+from .logger import LoggerProviderMixin
 
 __all__ = 'DomainService', 'Service'
 
 
-class Service(object):
+class Service(LoggerProviderMixin):
     """The inteface of services.
 
     :param build: the build object
