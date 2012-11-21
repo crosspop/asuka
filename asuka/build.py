@@ -81,8 +81,8 @@ class BaseBuild(LoggerProviderMixin):
 
     @property
     def services(self):
-        """(:class:`collections.Iterable`) The list of declared
-        :class:`~asuka.service.Service` objects.
+        """(:class:`collections.Sequence`) The list of declared
+        :class:`~asuka.service.Service` objects, in topological order.
 
         """
         filename_re = self.SERVICE_FILENAME_PATTERN
@@ -90,28 +90,49 @@ class BaseBuild(LoggerProviderMixin):
             config_dir = os.path.join(path, self.app.config_dir)
             if not os.path.isdir(config_dir):
                 return
-            for name in os.listdir(config_dir):
-                match = filename_re.search(name)
+            service_dicts = {}
+            for fname in os.listdir(config_dir):
+                match = filename_re.search(fname)
                 if not match:
                     continue
                 try:
-                    with open(os.path.join(config_dir, name)) as yaml:
+                    with open(os.path.join(config_dir, fname)) as yaml:
                         service_dict = load(yaml)
                     if not service_dict.pop('enabled', False):
                         continue
+                    service_dicts[match.group('name')] = service_dict
+                except Exception as e:
+                    raise type(e)(fname + ': ' + str(e))
+            result = []
+            visited = set()
+            def visit(name, service_dict):
+                if name in visited:
+                    return
+                visited.add(name)
+                for d_name, d_service_dict in service_dicts.iteritems():
+                    if name in d_service_dict.get('depends', ()):
+                        visit(d_name, d_service_dict)
+                try:
                     import_name = service_dict.pop('type')
                     service_cls = import_string(import_name)
                     if not isinstance(service_cls, type):
                         raise TypeError('type must be a class, not ' +
                                         repr(service_cls))
-                    service = service_cls(
-                        build=self,
-                        name=match.group('name'),
-                        **service_dict
-                    )
+                    kwargs = dict(service_dict)
+                    try:
+                        del kwargs['depends']
+                    except KeyError:
+                        pass
+                    service = service_cls(build=self, name=name, **kwargs)
                 except Exception as e:
                     raise type(e)(name + ': ' + str(e))
-                yield service
+                result.append(service)
+            for name, service_dict in service_dicts.iteritems():
+                if not service_dict.get('depends'):
+                    visit(name, service_dict)
+            result = result[::-1]
+            self.get_logger('services').info('%r', [s.name for s in result])
+            return result
 
     def terminate_instances(self, ignore_commit=False):
         """Terminates the instances of the :attr:`branch`."""
