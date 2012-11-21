@@ -173,13 +173,8 @@ class Branch(LoggerProviderMixin):
 
     def __repr__(self):
         c = type(self)
-        if self.pull_request:
-            fmt = '<{0}.{1} {2.app.name}:{2.name} #{2.pull_request.number}>'
-        else:
-            fmt = '<{0}.{1} {2.app.name}:{2.name}>'
-        return fmt.format(
-            c.__module__, c.__name__, self
-        )
+        fmt = '<{0}.{1} {2.app.name}:{2.name}>'
+        return fmt.format(c.__module__, c.__name__, self)
 
 
 class PullRequest(Branch):
@@ -271,6 +266,12 @@ class PullRequest(Branch):
 
     def __hash__(self):
         return self.number
+
+    def __repr__(self):
+        c = type(self)
+        fmt = '<{0}.{1} {2.app.name} #{2.number}>'
+        return fmt.format(c.__module__, c.__name__, self)
+
 
 
 class GitMergeError(EnvironmentError):
