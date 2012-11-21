@@ -3,6 +3,7 @@
 
 """
 import contextlib
+import json
 import os
 import os.path
 import re
@@ -314,8 +315,22 @@ APTCACHE='/var/cache/apt/archives/'
             for service in service_manifests[1:]:
                 for cmd in service.pre_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
+            values_path = '/etc/{0}/values.json'.format(self.app.name)
+            service_values = {
+                '.build': dict(
+                    commit=self.commit.ref,
+                    branch=self.branch.label
+                )
+            }
+            refresh_values = lambda: self.instance.write_file(
+                values_path,
+                json.dumps(service_values),
+                sudo=True
+            )
+            refresh_values()
             for service in service_manifests[1:]:
-                service.install(self.instance)
+                service_values[service.name] = service.install(self.instance)
+                refresh_values()
             for service in service_manifests[1:]:
                 for cmd in service.post_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})

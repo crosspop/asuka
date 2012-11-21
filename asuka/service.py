@@ -125,6 +125,9 @@ class Service(object):
 
         :param instance: the instance to install the service
         :type instance: :class:`asuka.instance.Instance`
+        :returns: values provided by the service.  this values are shared
+                  to the app via :file:`/etc/<app>/values.json` file.
+                  it must be able to be serialized into JSON
 
         """
         if not isinstance(instance, Instance):
