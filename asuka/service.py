@@ -32,7 +32,7 @@ class Service(object):
     """
 
     #: (:class:`re.RegexObject`) The pattern of the valid service name.
-    NAME_PATTERN = re.compile('^[a-z0-9_]{2,50}$')
+    NAME_PATTERN = re.compile('^[a-z_][a-z0-9_]{1,50}$')
 
     #: (:class:`~asuka.build.Build`) The build object.
     build = None
