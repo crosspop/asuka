@@ -165,6 +165,16 @@ def home(request):
     return render(request, branches, 'home', branches=branches)
 
 
+@WebApp.route('/deploy', methods=['POST'])
+def deploy_manually(request):
+    webapp = request.app
+    app = webapp.app
+    branch = find_by_label(app, request.form['branch'])
+    commit = Commit(app, request.form['commit'])
+    deploy(webapp, commit, branch)
+    return 'Start to deploy {0!r} [{1.ref}]'.format(branch, commit)
+
+
 @WebApp.route('/branches/<label>/terminate', methods=['POST'])
 @auth_required
 def terminate(request, label):
