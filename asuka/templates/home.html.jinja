@@ -11,6 +11,8 @@
         <tr>
           <th>Branch</th>
           <th>Commit</th>
+          <td>Redeploy</td>
+          <td>Terminate</td>
         </tr>
       </thead>
       <tbody>
@@ -19,8 +21,16 @@
             <th>{{ branch|safe }}</th>
             <td><tt>{{ commit.ref }}</tt></td>
             <td>
+              <form action="{{ request.build_url('deploy_again',
+                               label=branch.label) }}"
+                    method="post" class="redeploy">
+                <input type="submit" value="Redeploy">
+              </form>
+            </td>
+            <td>
               <form action="{{ request.build_url('terminate',
-                               label=branch.label) }}" method="post">
+                               label=branch.label) }}"
+                    method="post" class="terminate">
                 <input type="submit" value="Terminate">
               </form>
             </td>

@@ -176,6 +176,17 @@ def terminate(request, label):
     return 'Start to terminate {0!r} [{1.ref}]'.format(branch, commit)
 
 
+@WebApp.route('/branches/<label>/deploy', methods=['POST'])
+@auth_required
+def deploy_again(request, label):
+    webapp = request.app
+    app = webapp.app
+    branch = find_by_label(app, label)
+    commit = app.deployed_branches[branch]
+    redeploy(webapp, commit, branch)
+    return 'Start to redeploy {0!r} [{1.ref}]'.format(branch, commit)
+
+
 @WebApp.route('/hook/')
 def hook(request):
     logger = logging.getLogger(__name__ + '.hook')
@@ -212,6 +223,17 @@ def hook_push(webapp, payload):
     commit = Commit(webapp.app, payload['after'])
     branch = Branch(webapp.app, payload['ref'].split('/', 2)[2])
     deploy(webapp, commit, branch)
+
+
+def redeploy(webapp, commit, branch):
+    logger = logging.getLogger(__name__ + '.redeploy')
+    logger.info('start redeployment: %s [%s]', branch.label, commit.ref)
+    webapp.pool.apply_async(redeploy_worker, (branch, commit))
+
+
+def redeploy_worker(branch, commit):
+    cleanup_worker(branch, commit)
+    deploy_worker(branch, commit)
 
 
 def cleanup(webapp, commit, branch):
