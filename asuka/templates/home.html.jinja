@@ -38,6 +38,13 @@
         {% endfor %}
       </tbody>
     </table>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+    </script>
+    <script>
+    $('form.redeploy, form.terminate').submit(function() {
+      return window.confirm('Are you sure?');
+    });
+    </script>
   </body>
 </html>
 {# vim: set filetype=htmljinja ts=2 sw=2 sts=2: #}
