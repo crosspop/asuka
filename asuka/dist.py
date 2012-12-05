@@ -23,11 +23,14 @@ from .branch import Branch
 from .commit import Commit
 from .logger import LoggerProviderMixin
 
-__all__ = 'PYPI_INDEX_URL', 'Dist', 'capture_stdout'
+__all__ = 'PYPI_EXTRA_INDEX_URLS', 'PYPI_INDEX_URL', 'Dist', 'capture_stdout'
 
 
 #: (:class:`basestring`) The preferred PyPI index URL.  (Currently Crate.io)
 PYPI_INDEX_URL = 'https://pypi.crate.io/simple/'
+
+#: (:class:`collections.Seqeuence`) The counterpart extra PyPI index URLs.
+PYPI_EXTRA_INDEX_URLS = ['http://pypi.python.org/simple/']
 
 
 capture_stdout_lock = threading.Lock()
@@ -141,7 +144,7 @@ class Dist(LoggerProviderMixin):
             options.requirements = []
             options.find_links = []
             options.index_url = PYPI_INDEX_URL
-            options.extra_index_urls = []
+            options.extra_index_urls = list(PYPI_EXTRA_INDEX_URLS)
             options.no_index = False
             options.use_mirrors = False
             options.mirrors = True
