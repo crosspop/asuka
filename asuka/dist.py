@@ -10,8 +10,10 @@ import os.path
 import sys
 import tempfile
 import threading
+import time
 
 from pip.basecommand import command_dict, load_command
+from pip.exceptions import PipError
 from pip.locations import build_prefix, src_prefix
 from pip.log import Logger, logger
 from pip.util import backup_dir
@@ -166,7 +168,22 @@ class Dist(LoggerProviderMixin):
             options.use_user_site = False
             options.as_egg = False
             asuka_logger.debug('start: pip bundle %s %s', bundle_path, filepath)
-            bundle.run(options, [bundle_path, filepath])
+            retrial = 0
+            while 1:
+                try:
+                    bundle.run(options, [bundle_path, filepath])
+                except PipError as e:
+                    asuka_logger.exception(e)
+                    retrial += 1
+                    if retrial < 3:
+                        asuka_logger.error(
+                            'retry pip bundle after %d second(s)... (%d)',
+                            retrial, retrial ** 2
+                        )
+                        time.sleep(retrial ** 2)
+                        continue
+                    raise
+                break
             asuka_logger.debug('end: pip bundle %s %s', bundle_path, filepath)
             yield package_name, os.path.basename(bundle_path), bundle_path
 
