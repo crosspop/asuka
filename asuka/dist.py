@@ -7,6 +7,7 @@ import datetime
 import io
 import optparse
 import os.path
+import shutil
 import sys
 import tempfile
 import threading
@@ -14,7 +15,7 @@ import time
 
 from pip.basecommand import command_dict, load_command
 from pip.exceptions import PipError
-from pip.locations import build_prefix, src_prefix
+from pip.locations import src_prefix
 from pip.log import Logger, logger
 from pip.util import backup_dir
 from pip.vcs import vcs
@@ -25,14 +26,19 @@ from .branch import Branch
 from .commit import Commit
 from .logger import LoggerProviderMixin
 
-__all__ = 'PYPI_EXTRA_INDEX_URLS', 'PYPI_INDEX_URL', 'Dist', 'capture_stdout'
+__all__ = 'PYPI_INDEX_URLS', 'Dist', 'capture_stdout'
 
 
-#: (:class:`basestring`) The preferred PyPI index URL.  (Currently Crate.io)
-PYPI_INDEX_URL = 'https://pypi.crate.io/simple/'
-
-#: (:class:`collections.Seqeuence`) The counterpart extra PyPI index URLs.
-PYPI_EXTRA_INDEX_URLS = ['http://pypi.python.org/simple/']
+#: (:class:`collections.Seqeuence`) The PyPI index URLs in preferred order.
+PYPI_INDEX_URLS = [
+    'https://pypi.crate.io/simple/',
+    'http://b.pypi.python.org/simple/',
+    'http://c.pypi.python.org/simple/',
+    'http://d.pypi.python.org/simple/',
+    'http://e.pypi.python.org/simple/',
+    'http://f.pypi.python.org/simple/',
+    'http://pypi.python.org/simple/'
+]
 
 
 capture_stdout_lock = threading.Lock()
@@ -136,6 +142,7 @@ class Dist(LoggerProviderMixin):
             load_command('bundle')
         bundle = command_dict['bundle']
         with self.archive_package() as (package_name, filename, filepath):
+            tempdir = tempfile.gettempdir()
             bundle_path = os.path.join(
                 os.path.dirname(filepath),
                 package_name + '.pybundle'
@@ -145,16 +152,19 @@ class Dist(LoggerProviderMixin):
             options.editables = []
             options.requirements = []
             options.find_links = []
-            options.index_url = PYPI_INDEX_URL
-            options.extra_index_urls = list(PYPI_EXTRA_INDEX_URLS)
+            options.index_url = PYPI_INDEX_URLS[0]
+            options.extra_index_urls = PYPI_INDEX_URLS[1:]
             options.no_index = False
             options.use_mirrors = False
             options.mirrors = True
-            options.build_dir = backup_dir(build_prefix, '-bundle')
+            options.build_dir = os.path.join(
+                tempdir,
+                'asuka-dist-build-bundle'
+            )
             options.target_dir = None
             options.download_dir = None
             options.download_cache = os.path.join(
-                tempfile.gettempdir(),
+                tempdir,
                 'asuka-dist-download-cache'
             )
             options.src_dir = backup_dir(src_prefix, '-bundle')
@@ -180,9 +190,13 @@ class Dist(LoggerProviderMixin):
                             'retry pip bundle after %d second(s)... (%d)',
                             retrial, retrial ** 2
                         )
+                        options.index_url = PYPI_INDEX_URLS[retrial]
+                        options.extra_index_urls = PYPI_INDEX_URLS[retrial+1:]
                         time.sleep(retrial ** 2)
                         continue
                     raise
+                finally:
+                    shutil.rmtree(options.build_dir)
                 break
             asuka_logger.debug('end: pip bundle %s %s', bundle_path, filepath)
             yield package_name, os.path.basename(bundle_path), bundle_path

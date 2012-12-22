@@ -19,7 +19,7 @@ from yaml import load
 
 from .branch import Branch
 from .commit import Commit
-from .dist import PYPI_EXTRA_INDEX_URLS, PYPI_INDEX_URL, Dist
+from .dist import PYPI_INDEX_URLS, Dist
 from .instance import Instance
 from .logger import LoggerProviderMixin
 
@@ -305,12 +305,12 @@ APTCACHE='/var/cache/apt/archives/'
             # join instance_setup_worker
             instance_setup_worker.join()
             self.instance.tags['Status'] = 'apt-installed'
-            sudo(['pip', 'install', '-i', PYPI_INDEX_URL] +
-                 ['--extra-index-url=' + idx for idx in PYPI_EXTRA_INDEX_URLS] +
+            sudo(['pip', 'install', '-i', PYPI_INDEX_URLS[0]] +
+                 ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]] +
                  [remote_path],
                  environ={'CI': '1'})
-            sudo(['pip', 'install', '-i', PYPI_INDEX_URL, '-I'] +
-                 ['--extra-index-url=' + idx for idx in PYPI_EXTRA_INDEX_URLS] +
+            sudo(['pip', 'install', '-i', PYPI_INDEX_URLS[0], '-I'] +
+                 ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]] +
                  list(python_packages), environ={'CI': '1'})
             self.instance.tags['Status'] = 'installed'
             # remove package
