@@ -212,6 +212,16 @@ def hook(request):
     message = payload.get('head_commit', {}).get('message', '')
     if IGNORE_PATTERN.search(message):
         return 'ignored'
+    config_url = app.repository._build_url('contents', app.config_dir,
+                                           base_url=app.repository._api)
+    config_dir = app.repository._get(config_url.rstrip('/'), params={
+        'ref': payload['head_commit']['id']
+    })
+    logger.info('config_dir.url = %r', config_dir.url)
+    logger.info('config_dir.status_code = %r', config_dir.status_code)
+    logger.debug('config_dir.json = %r', config_dir.json)
+    if config_dir.status_code >= 400:
+        return 'ignored'
     if event == 'pull_request':
         hook_pull_request(request.app, payload)
     elif event == 'push':
