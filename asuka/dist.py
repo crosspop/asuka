@@ -181,6 +181,10 @@ class Dist(LoggerProviderMixin):
             retrial = 0
             while 1:
                 try:
+                    shutil.rmtree(options.build_dir)
+                except (OSError, IOError):
+                    pass
+                try:
                     bundle.run(options, [bundle_path, filepath])
                 except PipError as e:
                     asuka_logger.exception(e)
