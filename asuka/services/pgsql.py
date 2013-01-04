@@ -55,8 +55,22 @@ class PostgreSQLService(Service):
         options = ['--' + opt + '=' + str(cfg[cfg_name])
                    for cfg_name, opt in config_opt_map.iteritems()
                    if cfg_name in cfg]
-        instance.do(['createdb', '--template', template] + options +
-                    [self.database])
+        fail = instance.do(['createdb', '--template', template] + options +
+                           [self.database])
+        if fail:
+            # Workaround for:
+            # ERROR:  source database "..." is being accessed by other users
+            instance.do([
+                'pg_dump', '-h', str(cfg['host']), '-U', str(cfg['user']),
+                '-E', str(cfg['encoding']), '-f', '/tmp/' + template + '.sql',
+                template
+            ])
+            instance.do(['createdb', '--template', 'template1'] + options +
+                        [self.database])
+            instance.do([
+                'psql', '-h', str(cfg['host']), '-U', str(cfg['user']),
+                '-f', '/tmp/' + template + '.sql', self.database
+            ])
         info = self.connection_info
         info['database'] = self.database
         return info
