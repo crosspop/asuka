@@ -216,6 +216,8 @@ def hook(request):
                                            base_url=app.repository._api)
     config_dir = app.repository._get(config_url.rstrip('/'), params={
         'ref': payload['head_commit']['id']
+               if event == 'push'
+               else payload['pull_request']['head']['sha']
     })
     logger.info('config_dir.url = %r', config_dir.url)
     logger.info('config_dir.status_code = %r', config_dir.status_code)
