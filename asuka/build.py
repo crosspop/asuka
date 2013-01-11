@@ -200,6 +200,10 @@ class Build(BaseBuild):
         """
         logger = self.get_logger('install')
         sudo = self.instance.sudo
+        logger.info(
+            'START TO INSTALL: branch = %r, commit = %r, instance = %r',
+            self.branch, self.commit, self.instance
+        )
         def setup_instance(service_manifests, service_manifests_available):
             logger = self.get_logger('install.setup_instance')
             with self.instance:
