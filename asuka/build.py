@@ -313,8 +313,6 @@ APTCACHE='/var/cache/apt/archives/'
                  ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]] +
                  list(python_packages), environ={'CI': '1'})
             self.instance.tags['Status'] = 'installed'
-            # remove package
-            self.instance.remove_file(remote_path)
             for service in service_manifests[1:]:
                 for cmd in service.pre_install:
                     sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
