@@ -113,7 +113,7 @@ class Branch(LoggerProviderMixin):
             '/tmp' if sys.platform == 'darwin' else tempfile.mkdtemp(),
             'asuka-{0}-{1}'.format(app.name, app_repo.id)
         )
-        master = app_repo.master_branch
+        master = app_repo.master_branch or app_repo._json_data['default_branch']
         def run(command, *args, **kwargs):
             cmd = command.format(*args, **kwargs)
             logger.info('%s', cmd)
@@ -159,9 +159,11 @@ class Branch(LoggerProviderMixin):
 
     @property
     def url(self):
+        master_branch = (self.repository.master_branch or
+                         self.repository._json_data['default_branch'])
         return '{0}/compare/{1}...{2}'.format(
             self.repository.html_url,
-            self.repository.master_branch,
+            master_branch,
             self.name
         )
 
