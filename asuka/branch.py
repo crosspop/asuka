@@ -161,6 +161,8 @@ class Branch(LoggerProviderMixin):
     def url(self):
         master_branch = (self.repository.master_branch or
                          self.repository._json_data['default_branch'])
+        if master_branch == self.name:
+            return '{0}/tree/{1}'.format(self.repository.html_url, self.name)
         return '{0}/compare/{1}...{2}'.format(
             self.repository.html_url,
             master_branch,
