@@ -9,9 +9,12 @@ import hmac
 import json
 import logging
 import multiprocessing
+import os.path
 import random
 import re
 import sys
+import time
+import traceback
 
 from github3.api import login
 from jinja2 import Environment, PackageLoader
@@ -359,6 +362,39 @@ def deploy_worker(branch, commit):
         logger.info('finished deploy_worker: %s [%s]', branch.label, commit.ref)
     except Exception as e:
         logger.exception(e)
+
+
+@WebApp.route('/logs/<build>/')
+@auth_required
+def log_file(request, build):
+    data_dir = request.app.app.data_dir
+    filename = os.path.join(data_dir, build, 'log.txt')
+    records = []
+    thread = request.values.get('thread')
+    logger = request.values.get('name')
+    with open(filename) as f:
+        for number, line in enumerate(f):
+            if line.strip():
+                try:
+                    record = json.loads(line)
+                except Exception:
+                    record = {
+                        'parsing_error': traceback.format_exc(),
+                        'line_number': number + 1
+                    }
+                else:
+                    if logger and record['name'] != logger:
+                        continue
+                    if thread and thread != (record['process_name'] +
+                                             '/' + record['thread_name']):
+                        continue
+                    record['created_time'] = time.gmtime(record['created'])
+                    record['created_string'] = time.strftime(
+                        '%Y-%m-%d %H:%M:%S',
+                        record['created_time']
+                    )
+                records.append(record)
+    return render(request, records, 'log_file', build=build, records=records)
 
 
 @WebApp.route('/delegate/')

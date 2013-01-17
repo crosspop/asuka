@@ -1,0 +1,56 @@
+{% extends 'base.html.jinja' %}
+
+{% block title -%}
+  {{ build }} &mdash; Build log &mdash; {{ super() }}
+{%- endblock %}
+
+{% block head %}
+  {{ super() }}
+  <style>
+  .level-debug td, .level-debug th { color: gray; }
+  .level-warning td, .level-warning th { font-weight: bolder; }
+  .level-error td, .level-error th { color: red; }
+  .level-critical td, .level-crticial th { color: red; font-weight: bolder; }
+  table { border-collapse: collapse; }
+  thead > tr > td, thead > tr > th { background-color: black; color: white; }
+  tbody > tr:hover > td, tbody > tr:hover > th {
+    background-color: #eee;
+  }
+  td, th {
+    white-space: pre; padding: 5px;
+    font-family: monospace; font-size: smaller;
+  }
+  </style>
+{% endblock %}
+
+{% block body %}
+  {{ super() }}
+  <h2>{{ build }} &mdash; Build log</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Recorded</th>
+        <th>Process/Thread</th>
+        <th>Logger</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in records %}
+        <tr class="level-{{ record.levelname|lower }}">
+          <td>{{ record.levelname }}</td>
+          <th>{{ record.created_string }}</th>
+          <td><a href="{{ request.url|with_qs(thread=record.process_name
+                                              ~ '/' ~ record.thread_name) }}">
+            {{- record.process_name }}/{{ record.thread_name }}</td>
+          <th><a href="{{ request.url|with_qs(name=record.name) }}">
+            {{- record.name }}</a></th>
+          <td>{{ record.message|escape }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+
+{# vim: set filetype=htmljinja ts=2 sw=2 sts=2: #}
