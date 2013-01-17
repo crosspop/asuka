@@ -3,13 +3,17 @@
 
 """
 import contextlib
+import datetime
 import json
+import logging
 import os
 import os.path
+import pprint
 import re
 import shutil
 import tempfile
 import threading
+import traceback
 
 from boto.exception import EC2ResponseError
 from boto.route53.record import ResourceRecordSets
@@ -68,6 +72,7 @@ class BaseBuild(LoggerProviderMixin):
         self.branch = branch
         self.commit = commit
         self.dist = Dist(branch, commit)
+        self.configure_logging_handler()
 
     @contextlib.contextmanager
     def fetch(self):
@@ -154,6 +159,27 @@ class BaseBuild(LoggerProviderMixin):
             self.app.ec2_connection.terminate_instances(instance_ids)
         except EC2ResponseError as e:
             logger.exception(e)
+
+    @property
+    def data_dir(self):
+        """(:class:`basestring`) The path of directory to store data made by
+        each build.
+
+        """
+        dirname = '{0.branch.label}-{0.commit!s}.{1:%Y%m%d%H%M%S}'.format(
+            self, datetime.datetime.utcnow()
+        )
+        path = os.path.join(self.app.data_dir, dirname)
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        return path
+
+    def configure_logging_handler(self):
+        filename = os.path.join(self.data_dir, 'log.txt')
+        handler = BuildLogHandler(filename, encoding='utf-8')
+        handler.setLevel(logging.DEBUG)
+        logger = logging.getLogger('asuka')
+        logger.addHandler(handler)
 
     def __repr__(self):
         c = type(self)
@@ -400,3 +426,38 @@ class Clean(BaseBuild):
             logger.info('Uninstall %s...', name)
             service.uninstall()
             logger.info('Uninstalled %s', name)
+
+
+class BuildLogHandler(logging.FileHandler):
+    """Specialized logging handler for build process.  It serializes
+    each :class:`~logging.LogRecord` to JSON objects.
+
+    """
+
+    def emit(self, record):
+        try:
+            stream = self.stream
+            json.dump({
+                'name': record.name,
+                'created': record.created,
+                'levelname': record.levelname,
+                'levelno': record.levelno,
+                'pathname': record.pathname,
+                'lineno': record.lineno,
+                'module': record.module,
+                'func_name': record.funcName,
+                'thread_name': record.threadName,
+                'process_name': record.processName,
+                'msg': record.msg,
+                'args': pprint.pformat(record.args),
+                'message': self.format(record),
+                'traceback': record.exc_info and traceback.format_exception(
+                    *record.exc_info
+                )
+            }, stream)
+            stream.write('\n')
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
