@@ -5,6 +5,7 @@
 import collections
 import hashlib
 import io
+import os.path
 import re
 
 from boto.ec2.connection import EC2Connection
@@ -46,6 +47,10 @@ class App(object):
     #: in the repository.  The default uses :file:`asuka/`.
     config_dir = 'asuka/'
 
+    #: (:class:`basestring`) The path of directory to store data made by
+    #: Asuka builds.
+    data_dir = None
+
     #: (:class:`str`) The Route 53 hosted zone ID.
     route53_hosted_zone_id = None
 
@@ -83,6 +88,16 @@ class App(object):
             if not isinstance(self.name, basestring):
                 raise TypeError('name must be a string, not ' +
                                 repr(self.name))
+        try:
+            self.data_dir = values.pop('data_dir')
+        except KeyError:
+            raise TypeError('missing data_dir parameter')
+        else:
+            if not isinstance(self.data_dir, basestring):
+                raise TypeError('data_dir must be a string, not ' +
+                                repr(self.data_dir))
+            elif not os.path.isdir(self.data_dir):
+                raise IOError(self.data_dir + ' is not directory that exists')
         try:
             self.ec2_connection = values.pop('ec2_connection')
         except KeyError:
