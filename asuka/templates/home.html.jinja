@@ -1,61 +1,61 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>アスカ</title>
-  </head>
-  <body>
-    <h1>アスカ</h1>
-    <table>
-      <thead>
+{% extends 'base.html.jinja' %}
+
+{% block title -%}
+  Deployed branches &mdash; {{ super() }}
+{%- endblock %}
+
+{% block body %}
+  {{ super() }}
+  <table>
+    <thead>
+      <tr>
+        <th>Branch</th>
+        <th>Commit</th>
+        <td>Redeploy</td>
+        <td>Terminate</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for branch, commit in branches.items() %}
         <tr>
-          <th>Branch</th>
-          <th>Commit</th>
-          <td>Redeploy</td>
-          <td>Terminate</td>
+          <th>{{ branch|safe }}</th>
+          <td><tt>{{ commit.ref }}</tt></td>
+          <td>
+            <form action="{{ request.build_url('deploy_again',
+                             label=branch.label) }}"
+                  method="post" class="redeploy">
+              <input type="submit" value="Redeploy">
+            </form>
+          </td>
+          <td>
+            <form action="{{ request.build_url('terminate',
+                             label=branch.label) }}"
+                  method="post" class="terminate">
+              <input type="submit" value="Terminate">
+            </form>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {% for branch, commit in branches.items() %}
-          <tr>
-            <th>{{ branch|safe }}</th>
-            <td><tt>{{ commit.ref }}</tt></td>
-            <td>
-              <form action="{{ request.build_url('deploy_again',
-                               label=branch.label) }}"
-                    method="post" class="redeploy">
-                <input type="submit" value="Redeploy">
-              </form>
-            </td>
-            <td>
-              <form action="{{ request.build_url('terminate',
-                               label=branch.label) }}"
-                    method="post" class="terminate">
-                <input type="submit" value="Terminate">
-              </form>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <form action="{{ request.build_url('deploy_manually') }}"
-          method="post" class="deploy">
-      <fieldset>
-        <label>Manual deployment</label>
-        <label>Branch <input type="text" name="branch"
-                             placeholder="e.g. pull-5, branch-master"></label>
-        <label>Commit <input type="text" name="commit" maxlength="40"
-                             placeholder="e.g. 5fa1779c62b5"></label>
-        <input type="submit" value="Deploy">
-      </fieldset>
-    </form>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
-    </script>
-    <script>
-    $('form.redeploy, form.terminate, form.deploy').submit(function() {
-      return window.confirm('Are you sure?');
-    });
-    </script>
-  </body>
-</html>
+      {% endfor %}
+    </tbody>
+  </table>
+  <form action="{{ request.build_url('deploy_manually') }}"
+        method="post" class="deploy">
+    <fieldset>
+      <label>Manual deployment</label>
+      <label>Branch <input type="text" name="branch"
+                           placeholder="e.g. pull-5, branch-master"></label>
+      <label>Commit <input type="text" name="commit" maxlength="40"
+                           placeholder="e.g. 5fa1779c62b5"></label>
+      <input type="submit" value="Deploy">
+    </fieldset>
+  </form>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+  </script>
+  <script>
+  $('form.redeploy, form.terminate, form.deploy').submit(function() {
+    return window.confirm('Are you sure?');
+  });
+  </script>
+{% endblock %}
+
 {# vim: set filetype=htmljinja ts=2 sw=2 sts=2: #}
