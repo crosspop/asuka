@@ -41,13 +41,6 @@ def run_server():
     if options.verbose and options.quiet:
         parser.error('options -v/--verbose and -q/--quiet are mutually '
                      'exclusive')
-    app = app_from_config_file(config)
-    webapp = WebApp(app)
-    def pong(environ, start_response):
-        start_response('200 OK', [('Content-Type', 'text/plain')])
-        return ['pong']
-    if options.pong:
-        webapp = DispatcherMiddleware(webapp, {options.pong: pong})
     if options.log_file in ('/dev/stderr', '/dev/stdout'):
         log_file = getattr(sys, options.log_file[:-6])
     else:
@@ -61,4 +54,11 @@ def run_server():
     logger =  logging.getLogger()
     logger.setLevel(logging_level)
     logger.addHandler(logging.StreamHandler(log_file))
+    app = app_from_config_file(config)
+    webapp = WebApp(app)
+    def pong(environ, start_response):
+        start_response('200 OK', [('Content-Type', 'text/plain')])
+        return ['pong']
+    if options.pong:
+        webapp = DispatcherMiddleware(webapp, {options.pong: pong})
     serve(webapp, host=options.host, port=options.port)
