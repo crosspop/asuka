@@ -19,7 +19,7 @@ from plastic.app import BaseApp
 from plastic.rendering import render
 from requests import session
 from werkzeug.exceptions import BadRequest, Forbidden
-from werkzeug.urls import url_encode
+from werkzeug.urls import url_decode, url_encode
 from werkzeug.utils import redirect
 
 from .app import App
@@ -377,3 +377,21 @@ def delegate(request):
         'sig': sig
     })
     return redirect(back)
+
+
+def with_qs(url, **args):
+    """Updates query string part from the ``url``.  Parameters to update
+    are given by keywords.
+
+    """
+    try:
+        pos = url.index('?')
+    except ValueError:
+        return url + '?' + url_encode(args)
+    pos += 1
+    query = url_decode(url[pos:], cls=dict)
+    query.update(args)
+    return url[:pos] + url_encode(query)
+
+
+jinja_env.filters['with_qs'] = with_qs
