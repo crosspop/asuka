@@ -1,0 +1,20 @@
+{% extends 'base.html.jinja' %}
+
+{% block title -%}
+  Build logs &mdash; {{ super() }}
+{%- endblock %}
+
+{% block body %}
+  {{ super() }}
+  <h2>Build logs</h2>
+  {% if builds %}
+    <ul>
+      {% for build in builds %}
+        <li><a href="{{ request.build_url('log_file', build=build) }}">
+            {{- build }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
+
+{# vim: set filetype=htmljinja ts=2 sw=2 sts=2: #}

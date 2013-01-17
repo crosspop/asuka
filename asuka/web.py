@@ -9,6 +9,7 @@ import hmac
 import json
 import logging
 import multiprocessing
+import os
 import os.path
 import random
 import re
@@ -362,6 +363,18 @@ def deploy_worker(branch, commit):
         logger.info('finished deploy_worker: %s [%s]', branch.label, commit.ref)
     except Exception as e:
         logger.exception(e)
+
+
+@WebApp.route('/logs/')
+@auth_required
+def log_list(request):
+    data_dir = request.app.app.data_dir
+    entries = [
+        dirname
+        for dirname in os.listdir(data_dir)
+        if os.path.isdir(os.path.join(data_dir, dirname))
+    ]
+    return render(request, entries, 'log_list', builds=entries)
 
 
 @WebApp.route('/logs/<build>/')
