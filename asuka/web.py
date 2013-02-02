@@ -374,6 +374,7 @@ def log_list(request):
         for dirname in os.listdir(data_dir)
         if os.path.isdir(os.path.join(data_dir, dirname))
     ]
+    entries.sort(key=lambda n: n.rsplit('.', 1)[-1], reverse=True)
     return render(request, entries, 'log_list', builds=entries)
 
 
