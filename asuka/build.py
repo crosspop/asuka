@@ -319,52 +319,53 @@ APTCACHE='/var/cache/apt/archives/'
             with self.dist.bundle_package() as (package, filename, temp_path):
                 shutil.copyfile(temp_path, package_path)
                 remote_path = os.path.join('/tmp', filename)
-        with self.instance.sftp():
-            # upload config files
-            self.instance.put_directory(
-                os.path.join(config_temp_path, self.app.name),
-                '/etc/' + self.app.name,
-                sudo=True
-            )
-            shutil.rmtree(config_temp_path)
-            python_packages = set()
-            for service in service_manifests[1:]:
-                python_packages.update(service.required_python_packages)
-            # uploads package
-            self.instance.put_file(package_path, remote_path)
-            # join instance_setup_worker
-            instance_setup_worker.join()
-            self.instance.tags['Status'] = 'apt-installed'
-            sudo(['pip', 'install', '-i', PYPI_INDEX_URLS[0]] +
-                 ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]] +
-                 [remote_path],
-                 environ={'CI': '1'})
-            sudo(['pip', 'install', '-i', PYPI_INDEX_URLS[0], '-I'] +
-                 ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]] +
-                 list(python_packages), environ={'CI': '1'})
-            self.instance.tags['Status'] = 'installed'
-            for service in service_manifests[1:]:
-                for cmd in service.pre_install:
-                    sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
-            values_path = '/etc/{0}/values.json'.format(self.app.name)
-            service_values = {
-                '.build': dict(
-                    commit=self.commit.ref,
-                    branch=self.branch.label
+            with self.instance.sftp():
+                # upload config files
+                self.instance.put_directory(
+                    os.path.join(config_temp_path, self.app.name),
+                    '/etc/' + self.app.name,
+                    sudo=True
                 )
-            }
-            refresh_values = lambda: self.instance.write_file(
-                values_path,
-                json.dumps(service_values),
-                sudo=True
-            )
-            refresh_values()
-            for service in service_manifests[1:]:
-                service_values[service.name] = service.install(self.instance)
+                shutil.rmtree(config_temp_path)
+                python_packages = set()
+                for service in service_manifests[1:]:
+                    python_packages.update(service.required_python_packages)
+                # uploads package
+                self.instance.put_file(package_path, remote_path)
+                # join instance_setup_worker
+                instance_setup_worker.join()
+                self.instance.tags['Status'] = 'apt-installed'
+                pip_cmd = (
+                    ['pip', 'install', '-i', PYPI_INDEX_URLS[0]] +
+                    ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]]
+                )
+                sudo(pip_cmd + [remote_path], environ={'CI': '1'})
+                sudo(pip_cmd + ['-I'] + list(python_packages),
+                     environ={'CI': '1'})
+                self.instance.tags['Status'] = 'installed'
+                for service in service_manifests[1:]:
+                    for cmd in service.pre_install:
+                        sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
+                values_path = '/etc/{0}/values.json'.format(self.app.name)
+                service_values = {
+                    '.build': dict(
+                        commit=self.commit.ref,
+                        branch=self.branch.label
+                    )
+                }
+                refresh_values = lambda: self.instance.write_file(
+                    values_path,
+                    json.dumps(service_values),
+                    sudo=True
+                )
                 refresh_values()
-            for service in service_manifests[1:]:
-                for cmd in service.post_install:
-                    sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
+                for service in service_manifests[1:]:
+                    service_value = service.install(self.instance)
+                    service_values[service.name] = service_value
+                    refresh_values()
+                for service in service_manifests[1:]:
+                    for cmd in service.post_install:
+                        sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
         service_map = dict((service.name, service)
                            for service in service_manifests[1:])
         deployed_domains = {}
