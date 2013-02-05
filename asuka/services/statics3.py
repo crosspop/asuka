@@ -99,7 +99,8 @@ class StaticS3Service(Service):
                     filename=os.path.join(path, fullname),
                     replace=True,
                     policy='public-read',
-                    reduced_redundancy=True
+                    reduced_redundancy=True,
+                    headers={'Cache-Control': 'max-age=31556926,public'}
                 )
 
     def install(self, instance):
