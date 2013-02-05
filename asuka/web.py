@@ -6,7 +6,6 @@ import datetime
 import functools
 import hashlib
 import hmac
-import json
 import logging
 import multiprocessing
 import os
@@ -22,6 +21,10 @@ from jinja2 import Environment, PackageLoader
 from plastic.app import BaseApp
 from plastic.rendering import render
 from requests import session
+try:
+    import simplejson as json
+except ImportError:
+    import json
 from werkzeug.exceptions import BadRequest, Forbidden
 from werkzeug.urls import url_decode, url_encode
 from werkzeug.utils import redirect
