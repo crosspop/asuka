@@ -7,6 +7,7 @@ uploaded to and servced using AWS S3_.
 .. _S3: http://aws.amazon.com/s3/
 
 """
+import datetime
 import os
 import os.path
 
@@ -102,8 +103,16 @@ class StaticS3Service(Service):
                 )
 
     def install(self, instance):
+        logger = self.get_logger('install')
         super(StaticS3Service, self).install(instance)
-        self.upload_files()
+        key = Key(self.bucket)
+        key.key = self.key_prefix
+        if key.exists():
+            logger.info('%s already exists; skip uploading', self.key_prefix)
+        else:
+            logger.info('upload files to %s...', self.key_prefix)
+            self.upload_files()
+            key.set_contents_from_string(datetime.datetime.utcnow().isoformat())
         url_base = '//{0}.s3.amazonaws.com/{1}/'.format(
             self.bucket_name,
             self.key_prefix
