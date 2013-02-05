@@ -122,7 +122,7 @@ class Dist(LoggerProviderMixin):
             ])
             filename = package_name + '.tar.bz2'
             filepath = os.path.join(path, 'dist', filename)
-            logger.info('sdist_path = %r', filepath)
+            self.get_logger('archive_package').info('sdist_path = %r', filepath)
             yield package_name, filename, filepath
 
     @contextlib.contextmanager
@@ -132,11 +132,13 @@ class Dist(LoggerProviderMixin):
         if not getattr(type(self), 'initialized', False):
             type(self).initialized = True
             logger.consumers.extend([
-                (slice(Logger.VERBOSE_DEBUG, Logger.INFO), asuka_logger.debug),
-                (slice(Logger.INFO, Logger.WARN), asuka_logger.info),
-                (slice(Logger.WARN, Logger.ERROR), asuka_logger.warn),
-                (slice(Logger.ERROR, Logger.FATAL), asuka_logger.error),
-                (slice(Logger.FATAL, None), asuka_logger.critical),
+                (Logger.FATAL, asuka_logger.critical),
+                (Logger.ERROR, asuka_logger.error),
+                (Logger.WARN, asuka_logger.warn),
+                (Logger.NOTIFY, asuka_logger.info),
+                (Logger.INFO, asuka_logger.info),
+                (Logger.DEBUG, asuka_logger.debug),
+                (Logger.VERBOSE_DEBUG, asuka_logger.debug)
             ])
             vcs.register(Git)
             load_command('bundle')
