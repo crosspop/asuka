@@ -26,6 +26,25 @@
 {% block body %}
   {{ super() }}
   <h2>{{ build }} &mdash; Build log</h2>
+  <div>Level:
+    {% with levels = [
+      (0, 'notset'),
+      (10, 'debug'),
+      (20, 'info'),
+      (30, 'warning'),
+      (40, 'error'),
+      (50, 'critical')
+    ] %}
+      {% for _levelno, _levelname in levels %}
+        {% if levelno == _levelno %}
+          <strong>{{ _levelname.upper() }}</strong>
+        {% else %}
+          <a href="{{ request.url|with_qs(levelno=_levelno)|escape }}">
+            {{ _levelname.upper() }}</a>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+  </div>
   <table>
     <thead>
       <tr>

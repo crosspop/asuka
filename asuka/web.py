@@ -85,7 +85,10 @@ WebApp.associate_mimetypes({
 
 #: (:class:`jinja2.Environment`) The configured environment of Jinja2
 #: template engine.
-jinja_env = Environment(loader=PackageLoader(__name__, WebApp.template_path))
+jinja_env = Environment(
+    loader=PackageLoader(__name__, WebApp.template_path),
+    extensions=['jinja2.ext.with_']
+)
 
 
 @WebApp.template_engine(suffix='jinja')
@@ -384,11 +387,14 @@ def log_file(request, build):
     data_dir = request.app.app.data_dir
     filename = os.path.join(data_dir, build, 'log.txt')
     records = []
+    levelno = request.values.get('levelno', default=logging.INFO, type=int)
     thread = request.values.get('thread')
     logger = request.values.get('name')
-    with open(filename) as f:
-        for number, line in enumerate(f):
-            if line.strip():
+    def records():
+        with open(filename) as f:
+            for number, line in enumerate(f):
+                if not line.strip():
+                    continue
                 try:
                     record = json.loads(line)
                 except Exception:
@@ -399,6 +405,8 @@ def log_file(request, build):
                 else:
                     if logger and record['name'] != logger:
                         continue
+                    if record['levelno'] < levelno:
+                        continue
                     if thread and thread != (record['process_name'] +
                                              '/' + record['thread_name']):
                         continue
@@ -408,7 +416,8 @@ def log_file(request, build):
                         record['created_time']
                     )
                 records.append(record)
-    return render(request, records, 'log_file', build=build, records=records)
+    return render(request, records, 'log_file',
+                  build=build, records=records, levelno=levelno)
 
 
 @WebApp.route('/delegate/')
