@@ -389,7 +389,6 @@ def log_list(request):
 def log_file(request, build):
     data_dir = request.app.app.data_dir
     filename = os.path.join(data_dir, build, 'log.txt')
-    records = []
     levelno = request.values.get('levelno', default=logging.INFO, type=int)
     thread = request.values.get('thread')
     logger = request.values.get('name')
@@ -418,9 +417,9 @@ def log_file(request, build):
                         '%Y-%m-%d %H:%M:%S',
                         record['created_time']
                     )
-                records.append(record)
-    return render(request, records, 'log_file',
-                  build=build, records=records, levelno=levelno)
+                yield record
+    return render(request, records(), 'log_file',
+                  build=build, records=records(), levelno=levelno)
 
 
 @WebApp.route('/delegate/')
