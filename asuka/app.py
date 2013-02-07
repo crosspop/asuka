@@ -77,6 +77,10 @@ class App(object):
     #: when the build has finished.  These urls are requested in the order.
     finish_hook_urls = []
 
+    #: (:class:`collections.Mapping`) The config dict for
+    #: :class:`~asuka.web.WebApp`.
+    web_config = {}
+
     def __init__(self, **values):
         # Pop and set "name" and "ec2_connection" first because other
         # properties require it.
@@ -117,6 +121,7 @@ class App(object):
         self.github_client_secret = str(self.github_client_secret)
         self.start_hook_urls = list(self.start_hook_urls)
         self.finish_hook_urls = list(self.finish_hook_urls)
+        self.web_config = dict(self.web_config)
 
     @property
     def private_key(self):

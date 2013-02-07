@@ -57,6 +57,7 @@ class WebApp(BaseApp):
         if not isinstance(app, App):
             raise TypeError('app must be an instance of asuka.app.App, not ' +
                             repr(app))
+        config.update(app.web_config)
         config['app'] = app
         super(WebApp, self).__init__(config)
         try:

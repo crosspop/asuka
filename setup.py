@@ -19,7 +19,7 @@ install_requires = [
     'boto == 2.6.0', 'distribute', 'github3.py == 0.1a8', 'iso8601 == 0.1.4',
     'Jinja2 == 2.6', 'paramiko == 1.7.7.2', 'Plastic == 0.1.0', 'pip == 1.2.1',
     'PyYAML == 3.10', 'requests == 0.14.1', 'waitress == 0.8.1',
-    'Werkzeug == 0.8.3'
+    'Werkzeug >= 0.8.3'
 ]
 
 
