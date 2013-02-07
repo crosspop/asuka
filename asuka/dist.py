@@ -6,6 +6,7 @@ import contextlib
 import datetime
 import io
 import optparse
+import os
 import os.path
 import shutil
 import sys
@@ -93,7 +94,7 @@ class Dist(LoggerProviderMixin):
         self.app = commit.app
 
     @contextlib.contextmanager
-    def archive_package(self):
+    def archive_package(self, cache=True):
         """Downloads the source tree and makes the source distribution.
         It yields triple of package name, filename of the source
         distribution, and its full path. ::
@@ -101,7 +102,12 @@ class Dist(LoggerProviderMixin):
             with build.archive_package() as (package, filename, path):
                 sftp.put(path, filename)
 
+        :param cache: whether to cache the package file or not.
+                      ``True`` by default
+        :type cache: :class:`bool`
+
         """
+        logger_ = self.get_logger('archive_package')
         with self.branch.fetch(self.commit.ref) as path:
             setup_script = os.path.join(path, 'setup.py')
             if not os.path.isfile(setup_script):
@@ -116,13 +122,29 @@ class Dist(LoggerProviderMixin):
                 run_setup(setup_script, ['--fullname'])
                 fullname = buffer_.getvalue().rstrip().splitlines()[-1]
             package_name = fullname + tag
+            filename = package_name + '.tar.bz2'
+            if cache:
+                cache_dir_path = os.path.join(
+                    tempfile.gettempdir(),
+                    'asuka-dist-cache'
+                )
+                if not os.path.isdir(cache_dir_path):
+                    os.makedirs(cache_dir_path)
+                cache_path = os.path.join(cache_dir_path, filename)
+                if os.path.isfile(cache_path):
+                    logger_.info('cache exists: %s, skipping sdist...',
+                                 cache_path)
+                    yield package_name, filename, cache_path
+                    return
             run_setup(setup_script, [
                 'egg_info', '--tag-build', tag,
                 'sdist', '--formats=bztar'
             ])
-            filename = package_name + '.tar.bz2'
             filepath = os.path.join(path, 'dist', filename)
-            self.get_logger('archive_package').info('sdist_path = %r', filepath)
+            logger_.info('sdist_path = %r', filepath)
+            if cache:
+                logger_.info('save sdist cache %s...', cache_path)
+                shutil.copyfile(filepath, cache_path)
             yield package_name, filename, filepath
 
     @contextlib.contextmanager
