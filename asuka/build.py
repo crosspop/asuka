@@ -119,17 +119,7 @@ class BaseBuild(LoggerProviderMixin):
                     if name in d_service_dict.get('depends', ()):
                         visit(d_name, d_service_dict)
                 try:
-                    import_name = service_dict.pop('type')
-                    service_cls = import_string(import_name)
-                    if not isinstance(service_cls, type):
-                        raise TypeError('type must be a class, not ' +
-                                        repr(service_cls))
-                    kwargs = dict(service_dict)
-                    try:
-                        del kwargs['depends']
-                    except KeyError:
-                        pass
-                    service = service_cls(build=self, name=name, **kwargs)
+                    service = self.create_service(name, service_dict)
                 except Exception as e:
                     raise type(e)(name + ': ' + str(e))
                 result.append(service)
@@ -139,6 +129,32 @@ class BaseBuild(LoggerProviderMixin):
             result = result[::-1]
             self.get_logger('services').info('%r', [s.name for s in result])
             return result
+
+    def create_service(self, name, service_dict):
+        """Creates an instance of :class:`~asuka.service.Service`
+        from ``service_dict`` which is from an :file:`*.yml` manifest
+        file.
+
+        :param name: a service name (identifier)
+        :type name: :class:`basestring`
+        :param service_dict: a dictionary from an :file:`*.yml`
+                             manifest file
+        :type service_dit: :class:`collections.Mapping`
+        :returns: created new service instance
+        :rtype: :class:`asuka.service.Service`
+
+        """
+        import_name = service_dict.pop('type')
+        service_cls = import_string(import_name)
+        if not isinstance(service_cls, type):
+            raise TypeError('type must be a class, not ' +
+                            repr(service_cls))
+        kwargs = dict(service_dict)
+        try:
+            del kwargs['depends']
+        except KeyError:
+            pass
+        return service_cls(build=self, name=name, **kwargs)
 
     def terminate_instances(self, ignore_commit=False):
         """Terminates the instances of the :attr:`branch`."""
