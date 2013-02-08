@@ -37,7 +37,7 @@ def find_by_label(app, label):
 
 
 class Branch(LoggerProviderMixin):
-    """The branch line for continous deployment.
+    """The branch line for continuous deployment.
 
     :param app: the application object
     :type app: :class:`~asuka.app.App`
@@ -275,7 +275,6 @@ class PullRequest(Branch):
         c = type(self)
         fmt = '<{0}.{1} {2.app.name} #{2.number}>'
         return fmt.format(c.__module__, c.__name__, self)
-
 
 
 class GitMergeError(EnvironmentError):
