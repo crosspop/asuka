@@ -27,7 +27,7 @@ from .dist import PYPI_INDEX_URLS, Dist
 from .instance import Instance
 from .logger import LoggerProviderMixin
 
-__all__ = 'BaseBuild', 'Build', 'Clean'
+__all__ = 'BaseBuild', 'Build', 'BuildLogHandler', 'Clean'
 
 
 class BaseBuild(LoggerProviderMixin):
