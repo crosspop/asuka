@@ -31,7 +31,7 @@ from werkzeug.utils import redirect
 
 from .app import App
 from .branch import Branch, PullRequest, find_by_label
-from .build import Build, Clean
+from .build import Build, Clean, Promote
 from .commit import Commit
 
 __all__ = 'WebApp', 'auth_required', 'authorize', 'delegate', 'home', 'hook'
@@ -208,6 +208,17 @@ def deploy_again(request, label):
     return 'Start to redeploy {0!r} [{1.ref}]'.format(branch, commit)
 
 
+@WebApp.route('/branches/<label>/promote', methods=['POST'])
+@auth_required
+def start_promote(request, label):
+    webapp = request.app
+    app = webapp.app
+    branch = find_by_label(app, label)
+    commit = app.deployed_branches[branch]
+    promote(webapp, commit, branch)
+    return 'Start to promote {0!r} [{1.ref}]'.format(branch, commit)
+
+
 @WebApp.route('/hook/')
 def hook(request):
     logger = logging.getLogger(__name__ + '.hook')
@@ -285,6 +296,50 @@ def cleanup_worker(branch, commit):
         clean = Clean(branch, commit)
         clean.uninstall()
         logger.info('finished cleanup_worker: %s [%s]',
+                    branch.label, commit.ref)
+    except Exception as e:
+        logger.exception(e)
+
+
+def promote(webapp, commit, branch):
+    logger = logging.getLogger(__name__ + '.promote')
+    logger.info('start promoting: %s [%s]', branch.label, commit.ref)
+    webapp.pool.apply_async(promote_worker, (branch, commit))
+
+
+def promote_worker(branch, commit):
+    logger = logging.getLogger(__name__ + '.promote_worker')
+    try:
+        system_logger = logging.getLogger('asuka')
+        system_logger.setLevel(logging.DEBUG)
+        system_logger.addHandler(logging.StreamHandler(sys.stderr))
+        logger.info('start cleanup_worker: %s [%s]', branch.label, commit.ref)
+        # start web hook
+        payload = make_payload(branch, commit)
+        with session() as client:
+            for hook_url in branch.app.start_hook_urls:
+                client.post(
+                    hook_url,
+                    headers={'Content-Type': 'application/json'},
+                    data=json.dumps(payload)
+                )
+        # build
+        instance = branch.app.create_instance()
+        promote_ = Promote(branch, commit, instance)
+        deployed_domains = promote_.install()
+        # finish web hook
+        payload['deployed_domains'] = dict(
+            (service, domain[:-1] if domain.endswith('.') else domain)
+            for service, domain in deployed_domains.items()
+        )
+        with session() as client:
+            for hook_url in branch.app.finish_hook_urls:
+                client.post(
+                    hook_url,
+                    headers={'Content-Type': 'application/json'},
+                    data=json.dumps(payload)
+                )
+        logger.info('finished promote_worker: %s [%s]',
                     branch.label, commit.ref)
     except Exception as e:
         logger.exception(e)

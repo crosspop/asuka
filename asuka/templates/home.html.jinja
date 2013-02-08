@@ -11,6 +11,7 @@
       <tr>
         <th>Branch</th>
         <th>Commit</th>
+        <td>Promote</td>
         <td>Redeploy</td>
         <td>Terminate</td>
       </tr>
@@ -20,6 +21,13 @@
         <tr>
           <th>{{ branch|safe }}</th>
           <td><tt>{{ commit.ref }}</tt></td>
+          <td>
+            <form action="{{ request.build_url('start_promote',
+                             label=branch.label) }}"
+                  method="post" class="promote">
+              <input type="submit" value="Promote">
+            </form>
+          </td>
           <td>
             <form action="{{ request.build_url('deploy_again',
                              label=branch.label) }}"
