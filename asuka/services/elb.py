@@ -41,7 +41,10 @@ class ELBService(DomainService):
     @property
     def load_balancer_name(self):
         """(:class:`basestring`) The name of load balancer."""
-        return '{0}-{1}-{2}'.format(self.app.name, self.name, self.branch.label)
+        return self.config.get(
+            'name',
+            '{app.name}-{service.name}-{branch.label}'
+        ).format(app=self.app, service=self, branch=self.branch)
 
     @property
     def listeners(self):
