@@ -148,7 +148,20 @@ class Dist(LoggerProviderMixin):
             yield package_name, filename, filepath
 
     @contextlib.contextmanager
-    def bundle_package(self):
+    def bundle_package(self, cache=True):
+        """Makes the pybundle archive (that :program:`pip` can take to
+        install) with completely resolved dependencies.  It yields triple
+        of package name, filename of the pybundle archive, and its full
+        path. ::
+
+            with build.bundle_package() as (package, filename, path):
+                sftp.put(path, filename)
+
+        :param cache: whether to cache the package file or not.
+                      ``True`` by default
+        :type cache: :class:`bool`
+
+        """
         asuka_logger = self.get_logger('bundle_package')
         # Makes pip.log.logger to forward records to the standard logging
         if not getattr(type(self), 'initialized', False):
@@ -166,6 +179,19 @@ class Dist(LoggerProviderMixin):
             load_command('bundle')
         bundle = command_dict['bundle']
         with self.archive_package() as (package_name, filename, filepath):
+            if cache:
+                cache_dir_path = os.path.join(
+                    tempfile.gettempdir(),
+                    'asuka-pybundle-cache'
+                )
+                if not os.path.isdir(cache_dir_path):
+                    os.makedirs(cache_dir_path)
+                cache_path = os.path.join(cache_dir_path, filename)
+                if os.path.isfile(cache_path):
+                    asuka_logger.info('cache exists: %s, skipping pybundle...',
+                                      cache_path)
+                    yield package_name, filename, cache_path
+                    return
             tempdir = tempfile.gettempdir()
             bundle_path = os.path.join(
                 os.path.dirname(filepath),
@@ -227,6 +253,9 @@ class Dist(LoggerProviderMixin):
                     shutil.rmtree(options.build_dir)
                 break
             asuka_logger.debug('end: pip bundle %s %s', bundle_path, filepath)
+            if cache:
+                asuka_logger.info('save pybundle cache %s...', cache_path)
+                shutil.copyfile(filepath, cache_path)
             yield package_name, os.path.basename(bundle_path), bundle_path
 
 
