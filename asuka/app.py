@@ -56,8 +56,16 @@ class App(object):
 
     #: (:class:`collections.Mapping`) The map of service names and their
     #: mapped domain name format strings
-    #: e.g. ``{'web': '{feature:branch-,pull-}.test.example.com.'}``.
+    #: e.g. ``{'web': '{branch:label}.test.example.com.'}``.
     route53_records = {}
+
+    #: (:class:`str`) Same to :attr:`route53_hosted_zone_id` except it's
+    #: for promoted live deployment.
+    route53_live_hosted_zone_id = None
+
+    #: (:class:`collections.Mapping`) Same to :attr:`route53_records`
+    #: except it's for promoted live deployment.
+    route53_live_records = {}
 
     #: (:class:`collections.Set`) The set of security groups EC2 instances
     #: to use.

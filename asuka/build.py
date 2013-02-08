@@ -27,7 +27,7 @@ from .dist import PYPI_INDEX_URLS, Dist
 from .instance import Instance
 from .logger import LoggerProviderMixin
 
-__all__ = 'BaseBuild', 'Build', 'BuildLogHandler', 'Clean'
+__all__ = 'BaseBuild', 'Build', 'BuildLogHandler', 'Clean', 'Promote'
 
 
 class BaseBuild(LoggerProviderMixin):
@@ -154,6 +154,10 @@ class BaseBuild(LoggerProviderMixin):
             del kwargs['depends']
         except KeyError:
             pass
+        try:
+            del kwargs['live_config']
+        except KeyError:
+            pass
         return service_cls(build=self, name=name, **kwargs)
 
     @property
@@ -184,6 +188,7 @@ class BaseBuild(LoggerProviderMixin):
                 for instance in reservation.instances
                 if (ignore_commit or
                     instance.tags.get('Commit', '').strip() != self.commit.ref)
+                   and instance.tags.get('Live') != 'live'
             ]
             logger.debug('instance_ids = %r', instance_ids)
             self.app.ec2_connection.terminate_instances(instance_ids)
@@ -477,6 +482,33 @@ class Clean(BaseBuild):
             logger.info('Uninstall %s...', name)
             service.uninstall()
             logger.info('Uninstalled %s', name)
+
+
+class Promote(Build):
+    """Promote the master branch as live."""
+
+    @property
+    def route53_hosted_zone_id(self):
+        return self.app.route53_live_hosted_zone_id
+
+    @property
+    def route53_records(self):
+        return self.app.route53_live_records
+
+    def create_service(self, name, service_dict):
+        service_dict = dict(service_dict)
+        config = service_dict.setdefault('config', {})
+        config.update(service_dict.pop('live_config', {}))
+        return super(Promote, self).create_service(name, service_dict)
+
+    @property
+    def instance_name(self):
+        return '{0}-live-{1}'.format(self.app.name, self.commit.ref[:8])
+
+    def update_instance_metadata(self, tags={}):
+        tag_dict = dict(Live='live')
+        tag_dict.update(tags)
+        super(Promote, self).update_instance_metadata(tags)
 
 
 class BuildLogHandler(logging.FileHandler):
