@@ -156,6 +156,20 @@ class BaseBuild(LoggerProviderMixin):
             pass
         return service_cls(build=self, name=name, **kwargs)
 
+    @property
+    def route53_hosted_zone_id(self):
+        """(:class:`str`) The Route 53 hosted zone ID."""
+        return self.app.route53_hosted_zone_id
+
+    @property
+    def route53_records(self):
+        """(:class:`collections.Mapping`) The map of service names
+        and their mapped domain name format strings
+        e.g. ``{'web': '{branch:label}.test.example.com.'}``.
+
+        """
+        return self.app.route53_records
+
     def terminate_instances(self, ignore_commit=False):
         """Terminates the instances of the :attr:`branch`."""
         logger = self.get_logger('terminate_instances')
@@ -378,17 +392,17 @@ APTCACHE='/var/cache/apt/archives/'
         service_map = dict((service.name, service)
                            for service in service_manifests[1:])
         deployed_domains = {}
-        if self.app.route53_hosted_zone_id and self.app.route53_records:
+        if self.route53_hosted_zone_id and self.route53_records:
             self.instance.tags['Status'] = 'run'
             changeset = ResourceRecordSets(
                 self.app.route53_connection,
-                self.app.route53_hosted_zone_id,
+                self.route53_hosted_zone_id,
                 'Changed by Asuka: {0}, {1} [{2}]'.format(self.app.name,
                                                           self.branch.label,
                                                           self.commit.ref)
             )
             from .service import DomainService
-            for service_name, domain_format in self.app.route53_records.items():
+            for service_name, domain_format in self.route53_records.items():
                 service = service_map[service_name]
                 if not isinstance(service, DomainService):
                     raise TypeError(repr(service) + 'is not an instance of '
@@ -441,15 +455,15 @@ class Clean(BaseBuild):
         logger = self.get_logger('uninstall')
         self.terminate_instances(ignore_commit=True)
         service_map = dict((s.name, s) for s in self.services)
-        if self.app.route53_hosted_zone_id and self.app.route53_records:
+        if self.route53_hosted_zone_id and self.route53_records:
             changeset = ResourceRecordSets(
                 self.app.route53_connection,
-                self.app.route53_hosted_zone_id,
+                self.route53_hosted_zone_id,
                 'Changed by Asuka: {0}, {1} [clean]'.format(self.app.name,
                                                             self.branch.label)
             )
             from .service import DomainService
-            for service_name, domain_format in self.app.route53_records.items():
+            for service_name, domain_format in self.route53_records.items():
                 service = service_map[service_name]
                 if not isinstance(service, DomainService):
                     raise TypeError(repr(service) + 'is not an instance of '
