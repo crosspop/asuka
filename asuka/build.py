@@ -311,14 +311,7 @@ APTCACHE='/var/cache/apt/archives/'
         )
         instance_setup_worker.start()
         # setup metadata of the instance
-        nick = '-'.join([self.app.name, self.branch.label, self.commit.ref[:8]])
-        self.instance.tags.update(
-            Name=nick,
-            App=self.app.name,
-            Branch=self.branch.label,
-            Commit=self.commit.ref,
-            Status='started'
-        )
+        self.update_instance_metadata({'Status': 'started'})
         # making package (pybundle)
         fd, package_path = tempfile.mkstemp()
         os.close(fd)
@@ -409,6 +402,33 @@ APTCACHE='/var/cache/apt/archives/'
         self.instance.tags['Status'] = 'done'
         self.terminate_instances()
         return deployed_domains
+
+    @property
+    def instance_name(self):
+        """(:class:`basestring`) The name of the installed :attr:`instance`."""
+        return '{0}-{1}-{2}'.format(
+            self.app.name,
+            self.branch.label,
+            self.commit.ref[:8]
+        )
+
+    def update_instance_metadata(self, tags={}):
+        """Update the metadata of the installed :attr:`instance`.
+        It optionally takes extra tags to set.
+
+        :param tags: the tags mapping to set to the :attr:`instance`
+        :type tags: :class:`collections.Mapping`
+
+        """
+        tag_dict = dict(
+            Name=self.instance_name,
+            App=self.app.name,
+            Branch=self.branch.label,
+            Commit=self.commit.ref,
+            Live=''
+        )
+        tag_dict.update(tags)
+        self.instance.tags.update(**tag_dict)
 
 
 class Clean(BaseBuild):
