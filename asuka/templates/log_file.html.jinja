@@ -26,6 +26,16 @@
 {% block body %}
   {{ super() }}
   <h2>{{ build }} &mdash; Build log</h2>
+  <form action="{{ request.build_url('log_file', build=build) }}">
+    {% for query, query_value in request.args.items() %}
+      {% if query != 'name' %}
+        <input type="hidden" name="{{ query }}" value="{{ query_value }}">
+      {% endif %}
+    {% endfor %}
+    <label>Prefix:
+      <input type="text" name="name" value="{{ request.args.name }}"></label>
+    <input type="submit" value="Filter">
+  </form>
   <div>Level:
     {% with levels = [
       (0, 'notset'),

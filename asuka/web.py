@@ -461,7 +461,7 @@ def log_file(request, build):
                         'line_number': number + 1
                     }
                 else:
-                    if logger and record['name'] != logger:
+                    if logger and not record['name'].startswith(logger):
                         continue
                     if record['levelno'] < levelno:
                         continue
