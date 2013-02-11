@@ -369,6 +369,8 @@ class DeployedBranchDict(collections.Mapping):
                     tags = instance.tags
                     if tags.get('Status') != 'done':
                         continue
+                    elif tags.get('Live', '') == 'live':
+                        continue
                     try:
                         branch = tags['Branch']
                         commit = tags['Commit']

@@ -174,22 +174,36 @@ class BaseBuild(LoggerProviderMixin):
         """
         return self.app.route53_records
 
-    def terminate_instances(self, ignore_commit=False):
-        """Terminates the instances of the :attr:`branch`."""
-        logger = self.get_logger('terminate_instances')
+    @property
+    def replaced_instances(self):
+        """(:class:`collections.Set`) The set of :class:`Instance
+        <boto.ec2.instance.Instance>`\ s to be replaced with an instance
+        built by this.
+
+        """
+        logger = self.get_logger('replaced_instances')
         try:
             reservations = self.app.ec2_connection.get_all_instances(filters={
                 'tag:App': self.app.name,
                 'tag:Branch': self.branch.label
             })
-            instance_ids = [
-                instance.id
+            instances = frozenset(
+                instance
                 for reservation in reservations
                 for instance in reservation.instances
-                if (ignore_commit or
-                    instance.tags.get('Commit', '').strip() != self.commit.ref)
-                   and instance.tags.get('Live') != 'live'
-            ]
+            )
+            logger.debug('instances = %r', instances)
+            return instances
+        except EC2ResponseError as e:
+            logger.exception(e)
+            raise
+
+    def terminate_instances(self):
+        """Terminates the instances of the :attr:`branch`."""
+        logger = self.get_logger('terminate_instances')
+        try:
+            instances = self.replaced_instances
+            instance_ids = [instance.id for instance in instances]
             logger.debug('instance_ids = %r', instance_ids)
             self.app.ec2_connection.terminate_instances(instance_ids)
         except EC2ResponseError as e:
@@ -431,6 +445,15 @@ APTCACHE='/var/cache/apt/archives/'
             self.commit.ref[:8]
         )
 
+    @property
+    def live(self):
+        """(:class:`basestring`) ``'live'`` (which is evaluated as ``True``
+        in boolean context) if it's live or an empty string (``''`` which
+        is evaluated as ``False`` in boolean context).
+
+        """
+        return ''
+
     def update_instance_metadata(self, tags={}):
         """Update the metadata of the installed :attr:`instance`.
         It optionally takes extra tags to set.
@@ -444,10 +467,20 @@ APTCACHE='/var/cache/apt/archives/'
             App=self.app.name,
             Branch=self.branch.label,
             Commit=self.commit.ref,
-            Live=''
+            Live=self.live
         )
         tag_dict.update(tags)
         self.instance.tags.update(**tag_dict)
+
+    @property
+    def replaced_instances(self):
+        instances = super(Build, self).replaced_instances
+        return frozenset(
+            instance
+            for instance in instances
+            if instance.tags.get('Commit', '').strip() != self.commit.ref and
+               instance.tags.get('Live', '') == self.live
+        )
 
 
 class Clean(BaseBuild):
@@ -458,7 +491,7 @@ class Clean(BaseBuild):
 
         """
         logger = self.get_logger('uninstall')
-        self.terminate_instances(ignore_commit=True)
+        self.terminate_instances()
         service_map = dict((s.name, s) for s in self.services)
         if self.route53_hosted_zone_id and self.route53_records:
             changeset = ResourceRecordSets(
@@ -505,10 +538,9 @@ class Promote(Build):
     def instance_name(self):
         return '{0}-live-{1}'.format(self.app.name, self.commit.ref[:8])
 
-    def update_instance_metadata(self, tags={}):
-        tag_dict = dict(Live='live')
-        tag_dict.update(tags)
-        super(Promote, self).update_instance_metadata(tags)
+    @property
+    def live(self):
+        return 'live'
 
 
 class BuildLogHandler(logging.FileHandler):
