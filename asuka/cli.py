@@ -8,6 +8,7 @@ import os.path
 import sys
 
 from waitress import serve
+from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.wsgi import DispatcherMiddleware
 
 from .config import app_from_config_file
@@ -27,6 +28,9 @@ def run_server():
                                      '--pong=/ping/')
     parser.add_option('--log-file', default='/dev/stderr',
                       help='File to write logs [default: %default]')
+    parser.add_option('--proxy-fix', action='store_true', default=False,
+                      help='Forward X-Forwared-* headers to support HTTP '
+                           'reverse proxies e.g. nginx, lighttpd')
     parser.add_option('-v', '--verbose', action='store_true', default=False)
     parser.add_option('-q', '--quiet', action='store_true', default=False)
     options, args = parser.parse_args()
@@ -56,6 +60,8 @@ def run_server():
     logger.addHandler(logging.StreamHandler(log_file))
     app = app_from_config_file(config)
     webapp = WebApp(app)
+    if options.proxy_fix:
+        webapp.wsgi_app = ProxyFix(webapp.wsgi_app)
     def pong(environ, start_response):
         start_response('200 OK', [('Content-Type', 'text/plain')])
         return ['pong']
