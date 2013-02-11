@@ -25,7 +25,7 @@ class ForcingHTTPSMiddleware(object):
 
     def __call__(self, environ, start_response):
         if environ['wsgi.url_scheme'] != 'https':
-            qs = environ.get('QUEYR_STRING', '')
+            qs = environ.get('QUERY_STRING', '')
             url = 'https://{0}{1}{2}'.format(
                 environ['HTTP_HOST'],
                 environ['PATH_INFO'],
