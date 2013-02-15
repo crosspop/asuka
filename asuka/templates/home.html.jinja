@@ -20,7 +20,7 @@
       {% for branch, commit in branches.items() %}
         <tr>
           <th>{{ branch|safe }}</th>
-          <td><tt>{{ commit.ref }}</tt></td>
+          <td class="commit"><tt>{{ commit.ref }}</tt></td>
           <td>
             <form action="{{ request.build_url('start_promote',
                              label=branch.label) }}"
@@ -60,7 +60,23 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
   </script>
   <script>
-  $('form.redeploy, form.terminate, form.deploy').submit(function() {
+  $('form.redeploy, form.terminate').submit(function () {
+    var row = $(this).parents().filter(function () {
+          return this.tagName == 'TR';
+        }).get(0),
+        hash = $('.commit tt', row).text().substr(0, 7),
+        repeated = '',
+        code;
+    while (true) {
+      code = window.prompt(
+        repeated + 'Are you sure?  Type ' + hash + ' to continue.'
+      );
+      if (code === null) return false;
+      else if (code === hash) break;
+      repeated = 'You typed a wrong answer. ';
+    }
+  });
+  $('form.promote, form.deploy').submit(function () {
     return window.confirm('Are you sure?');
   });
   </script>
