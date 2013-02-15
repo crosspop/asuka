@@ -4,12 +4,106 @@
     {% block head %}
       <meta charset="utf-8">
       <title>{% block title -%} アスカ {%- endblock %}</title>
+      <script>
+      // <![CDATA[
+      WebFontConfig = {
+        google: { families: ['Open+Sans:400,300,600:latin'] }
+      };
+      (function () {
+        var wf = document.createElement('script');
+        wf.src = '//ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+        wf.type = 'text/javascript';
+        wf.async = 'true';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(wf, s);
+      })();
+      // ]]>
+      </script>
+      <style>
+{% block css %}
+  {% set key_color = 'rgb(255, 197, 184)' %}
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+  .wf-active body {
+    font-family: 'Open Sans', sans-serif;
+  }
+  header {
+    background-color: {{ key_color }};
+    height: 20px;
+    line-height: 20px;
+    padding: 10px 0 10px 90px;
+    color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+  header nav {
+    font-size: 14px;
+  }
+  header nav a {
+    color: white;
+    text-decoration: none;
+  }
+  header nav a:after {
+    content: ' /';
+    cursor: default;
+  }
+  header nav a:last-child:after {
+    content: '';
+  }
+  h1 {
+    position: absolute;
+    font-family: 'Hiragino Maru Gothic ProN W4',
+                 'Hiragino Maru Gothic Pro W4';
+    font-weight: normal;
+    font-size: 24px;
+    letter-spacing: -5px;
+    line-height: 22px;
+    background-color: white;
+    color: {{ key_color }};
+    border: 2px solid {{ key_color }};
+    border-radius: 48px;
+    width: 43px;
+    height: 47px;
+    overflow: hidden;
+    text-align: right;
+    padding-right: 7px;
+    padding-top: 3px;
+    margin: 0;
+    left: 20px;
+    top: 10px;
+    cursor: default;
+  }
+  main {
+    display: block;
+    padding: 20px 0 10px 20px;
+    color: #333;
+  }
+  main a {
+    color: black;
+    text-decoration: none;
+    border-bottom: 1px solid {{ key_color }};
+  }
+  main a:hover {
+    border-color: #666;
+  }
+{% endblock %}
+      </style>
     {% endblock %}
   </head>
   <body>
-    {% block body %}
+    <header>
       <h1>アスカ</h1>
-    {% endblock %}
+      <nav>
+        <a href="{{ request.build_url('home') }}">Deployed branches</a>
+        <a href="{{ request.build_url('log_list') }}">Builds</a>
+      </nav>
+    </header>
+    <main>
+      {% block body %}
+      {% endblock %}
+    </main>
   </body>
 </html>
 {# vim: set filetype=htmljinja ts=2 sw=2 sts=2: #}
