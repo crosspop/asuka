@@ -41,13 +41,17 @@
   header nav {
     font-size: 14px;
   }
+  header nav .app-name {
+    font-weight: bolder;
+  }
   header nav a {
     color: white;
     text-decoration: none;
   }
   header nav a:after {
-    content: ' /';
+    content: ' ●';
     cursor: default;
+    opacity: 0.5;
   }
   header nav a:last-child:after {
     content: '';
@@ -96,6 +100,10 @@
     <header>
       <h1>アスカ</h1>
       <nav>
+        {% with app = request.app.app %}
+          <a href="{{ app.repository.html_url }}"
+             class="app-name">{{ app.name }}</a>
+        {% endwith %}
         <a href="{{ request.build_url('home') }}">Deployed branches</a>
         <a href="{{ request.build_url('log_list') }}">Builds</a>
       </nav>
