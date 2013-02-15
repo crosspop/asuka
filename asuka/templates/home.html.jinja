@@ -6,6 +6,7 @@
 
 {% block body %}
   {{ super() }}
+  <h2>Deployed branches</h2>
   <table>
     <thead>
       <tr>
@@ -49,11 +50,15 @@
   <form action="{{ request.build_url('deploy_manually') }}"
         method="post" class="deploy">
     <fieldset>
-      <label>Manual deployment</label>
-      <label>Branch <input type="text" name="branch"
-                           placeholder="e.g. pull-5, branch-master"></label>
-      <label>Commit <input type="text" name="commit" maxlength="40"
-                           placeholder="e.g. 5fa1779c62b5"></label>
+      <legend>Manual deployment</legend>
+      <div>
+        <label>Branch <input type="text" name="branch"
+                             placeholder="e.g. pull-5, branch-master"></label>
+      </div>
+      <div>
+        <label>Commit <input type="text" name="commit" maxlength="40"
+                             placeholder="e.g. 5fa1779c62b5"></label>
+      </div>
       <input type="submit" value="Deploy">
     </fieldset>
   </form>

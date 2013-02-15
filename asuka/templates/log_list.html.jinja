@@ -1,12 +1,12 @@
 {% extends 'base.html.jinja' %}
 
 {% block title -%}
-  Build logs &mdash; {{ super() }}
+  Builds &mdash; {{ super() }}
 {%- endblock %}
 
 {% block body %}
   {{ super() }}
-  <h2>Build logs</h2>
+  <h2>Builds</h2>
   {% if builds %}
     <ul>
       {% for build in builds %}
