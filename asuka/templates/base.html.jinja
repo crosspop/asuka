@@ -112,6 +112,22 @@
   main fieldset {
     margin-top: 15px;
   }
+  main table {
+    border-collapse: collapse;
+  }
+  main td, main th {
+    padding: 5px;
+  }
+  main thead th, main thead td {
+    border-bottom: 2px solid {{ key_color }};
+    font-size: 12px;
+    font-weight: bolder;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+  main tbody th {
+    text-align: left;
+  }
 {% endblock %}
       </style>
     {% endblock %}
