@@ -92,6 +92,26 @@
   main a:hover {
     border-color: #666;
   }
+  fieldset {
+    border: 2px solid {{ key_color }};
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding-top: 30px;
+  }
+  fieldset legend {
+    position: absolute;
+    margin-top: -25px;
+    font-size: 12px;
+    font-weight: bolder;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+  input[type=button], input[type=submit], button {
+    cursor: pointer;
+  }
+  main fieldset {
+    margin-top: 15px;
+  }
 {% endblock %}
       </style>
     {% endblock %}
