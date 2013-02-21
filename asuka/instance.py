@@ -228,19 +228,19 @@ class Instance(LoggerProviderMixin):
         with self as client:
             in_, out, err = client.exec_command(command)
             channel = out.channel
-            logger.info('[%s] %s', remote, command)
+            logger.info('%s$ %s', remote, command)
             while not channel.exit_status_ready():
                 ready = False
                 if channel.recv_ready():
                     out_line = out.readline()
                     if out_line:
-                        logger.info('[%s: %s | stdout] %s',
+                        logger.info('[%s$ %s] %s',
                                     remote, command, out_line)
                     ready = True
                 if channel.recv_stderr_ready():
                     err_line = err.readline()
                     if err_line:
-                        logger.info('[%s: %s | stderr] %s',
+                        logger.warn('[%s$ %s] %s',
                                     remote, command, err_line)
                     ready = True
                 if not ready:
