@@ -44,6 +44,9 @@ class BaseBuild(LoggerProviderMixin):
     #: files.
     SERVICE_FILENAME_PATTERN = re.compile(r'^(?P<name>[a-z0-9_]{2,50})\.yml$')
 
+    #: class:`basestring`) The unique identifier for the build.
+    identifier = None
+
     #: (:class:`~asuka.app.App`) The application object.
     app = None
 
@@ -72,6 +75,11 @@ class BaseBuild(LoggerProviderMixin):
         self.branch = branch
         self.commit = commit
         self.dist = Dist(branch, commit)
+        self.identifier = '{branch.label}-{commit!s}.{t:%Y%m%d%H%M%S}'.format(
+            branch=branch,
+            commit=commit,
+            t=datetime.datetime.utcnow()
+        )
         self.configure_logging_handler()
 
     @contextlib.contextmanager
@@ -215,10 +223,7 @@ class BaseBuild(LoggerProviderMixin):
         each build.
 
         """
-        dirname = '{0.branch.label}-{0.commit!s}.{1:%Y%m%d%H%M%S}'.format(
-            self, datetime.datetime.utcnow()
-        )
-        path = os.path.join(self.app.data_dir, dirname)
+        path = os.path.join(self.app.data_dir, self.identifier)
         if not os.path.isdir(path):
             os.makedirs(path)
         return path
