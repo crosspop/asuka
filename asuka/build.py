@@ -475,11 +475,13 @@ APTCACHE='/var/cache/apt/archives/'
     @property
     def replaced_instances(self):
         instances = super(Build, self).replaced_instances
+        tag = lambda instance, tag: instance.tags.get(tag, '').strip()
         return frozenset(
-            instance
-            for instance in instances
-            if instance.tags.get('Commit', '').strip() != self.commit.ref and
-               instance.tags.get('Live', '') == self.live
+            i
+            for i in instances
+            if tag(i, 'Live') == self.live and
+               (tag(i, 'Commit') != self.commit.ref
+                or tag(i, 'Status') != 'done')
         )
 
 
