@@ -158,7 +158,7 @@ def authorize(request):
             },
             headers={'Accept': 'application/json'}
         )
-        token = response.json['access_token']
+        token = response.json()['access_token']
         gh = login(token=token)
         if not app.repository.is_collaborator(gh.user().login):
             raise Forbidden()
@@ -272,21 +272,29 @@ def hook_push(webapp, payload):
 def redeploy(webapp, commit, branch):
     logger = logging.getLogger(__name__ + '.redeploy')
     logger.info('start redeployment: %s [%s]', branch.label, commit.ref)
-    webapp.pool.apply_async(redeploy_worker, (branch, commit))
+    webapp.pool.apply_async(
+        redeploy_worker,
+        (webapp.app, branch.label, commit.ref)
+    )
 
 
-def redeploy_worker(branch, commit):
-    cleanup_worker(branch, commit)
-    deploy_worker(branch, commit)
+def redeploy_worker(app, branch, commit):
+    cleanup_worker(app, branch, commit)
+    deploy_worker(app, branch, commit)
 
 
 def cleanup(webapp, commit, branch):
     logger = logging.getLogger(__name__ + '.cleanup')
     logger.info('start cleaning up: %s [%s]', branch.label, commit.ref)
-    webapp.pool.apply_async(cleanup_worker, (branch, commit))
+    webapp.pool.apply_async(
+        cleanup_worker,
+        (webapp.app, branch.label, commit.ref)
+    )
 
 
-def cleanup_worker(branch, commit):
+def cleanup_worker(app, branch, commit):
+    branch = find_by_label(app, branch)
+    commit = Commit(app, commit)
     logger = logging.getLogger(__name__ + '.cleanup_worker')
     try:
         system_logger = logging.getLogger('asuka')
@@ -304,10 +312,15 @@ def cleanup_worker(branch, commit):
 def promote(webapp, commit, branch):
     logger = logging.getLogger(__name__ + '.promote')
     logger.info('start promoting: %s [%s]', branch.label, commit.ref)
-    webapp.pool.apply_async(promote_worker, (branch, commit))
+    webapp.pool.apply_async(
+        promote_worker,
+        (webapp.app, branch.label, commit.ref)
+    )
 
 
-def promote_worker(branch, commit):
+def promote_worker(app, branch, commit):
+    branch = find_by_label(app, branch)
+    commit = Commit(app, commit)
     logger = logging.getLogger(__name__ + '.promote_worker')
     try:
         system_logger = logging.getLogger('asuka')
@@ -348,7 +361,10 @@ def promote_worker(branch, commit):
 def deploy(webapp, commit, branch):
     logger = logging.getLogger(__name__ + '.deploy')
     logger.info('start deployment: %s [%s]', branch.label, commit.ref)
-    webapp.pool.apply_async(deploy_worker, (branch, commit))
+    webapp.pool.apply_async(
+        deploy_worker,
+        (webapp.app, branch.label, commit.ref)
+    )
 
 
 def make_payload(branch, commit):
@@ -390,7 +406,9 @@ def make_payload(branch, commit):
     }
 
 
-def deploy_worker(branch, commit):
+def deploy_worker(app, branch, commit):
+    branch = find_by_label(app, branch)
+    commit = Commit(app, commit)
     logger = logging.getLogger(__name__ + '.deploy_worker')
     try:
         system_logger = logging.getLogger('asuka')

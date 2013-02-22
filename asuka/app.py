@@ -11,6 +11,7 @@ import re
 from boto.ec2.connection import EC2Connection
 from boto.exception import EC2ResponseError
 from boto.route53.connection import Route53Connection
+from github3.api import login
 from github3.github import GitHub
 from github3.repos import Repository
 from paramiko.pkey import PKey
@@ -202,11 +203,11 @@ class App(object):
             'content_type': 'json',
             'secret': self.github_client_secret
         }
-        for hook in repo.list_hooks():
+        for hook in repo.iter_hooks():
             if (hook.name == hook_name and
                 frozenset(hook.events) == hook_events and
                 hook.config == hook_config):
-                if not hook.is_active():
+                if not hook.active:
                     hook.edit(
                         name=hook_name,
                         events=list(hook_events),
@@ -238,7 +239,7 @@ class App(object):
             pass
         else:
             actual_key = self.private_key.get_base64()
-            for key in repos.list_keys():
+            for key in repos.iter_keys():
                 if key.title != self.key_name:
                     continue
                 elif key.key.split()[1] != actual_key:
@@ -340,6 +341,22 @@ class App(object):
 
     def __hash__(self):
         return hash(self.name)
+
+    def __getstate__(self):
+        config = dict((k, v)
+                      for k, v in self.__dict__.items()
+                      if not k.startswith('_'))
+        repo = self.repository
+        _, token = repo._session.headers['Authorization'].split()
+        config['repository'] = token, repo.owner.login, repo.name
+        config['private_key'] = self.private_key
+        return config
+
+    def __setstate__(self, state):
+        token, owner, repo = state.pop('repository')
+        github = login(token=token)
+        state['repository'] = github.repository(owner, repo)
+        self.__init__(**state)
 
     def __repr__(self):
         c = type(self)
