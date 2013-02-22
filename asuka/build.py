@@ -273,6 +273,14 @@ class Build(BaseBuild):
         :rtype: :class:`collections.Mapping`
 
         """
+        try:
+            return self._install()
+        except Exception as e:
+            logger = self.get_logger('install')
+            logger.exception(e)
+            raise
+
+    def _install(self):
         logger = self.get_logger('install')
         sudo = self.instance.sudo
         logger.info(
@@ -492,6 +500,14 @@ class Clean(BaseBuild):
         terminate instances.
 
         """
+        try:
+            return self._uninstall()
+        except Exception as e:
+            logger = self.get_logger('uninstall')
+            logger.exception(e)
+            raise
+
+    def _uninstall(self):
         logger = self.get_logger('uninstall')
         self.terminate_instances()
         service_map = dict((s.name, s) for s in self.services)
