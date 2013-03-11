@@ -231,8 +231,21 @@ def hook(request):
     event = request.headers['X-GitHub-Event']
     logger.info('event = %r', event)
     logger.debug('payload = %r', payload)
-    message = payload.get('head_commit', {}).get('message', '')
-    if IGNORE_PATTERN.search(message):
+    if event == 'push':
+        message = payload.get('head_commit', {}).get('message', '')
+    elif event == 'pull_request':
+        try:
+            number = payload['pull_request']['number']
+        except KeyError:
+            message = None
+        else:
+            pull_request = app.repository.pull_request(number)
+            commits = pull_request.iter_commits()
+            head = list(commits)[-1]
+            message = head._json_data.get('commit', {}).get('message', '')
+    else:
+        message = None
+    if message is None or IGNORE_PATTERN.search(message):
         return 'ignored'
     config_url = app.repository._build_url('contents', app.config_dir,
                                            base_url=app.repository._api)
