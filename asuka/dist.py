@@ -14,7 +14,8 @@ import tempfile
 import threading
 import time
 
-from pip.basecommand import command_dict, load_command
+from pip.baseparser import create_main_parser
+from pip.commands import commands
 from pip.exceptions import PipError
 from pip.locations import src_prefix
 from pip.log import Logger, logger
@@ -176,8 +177,8 @@ class Dist(LoggerProviderMixin):
                 (Logger.VERBOSE_DEBUG, asuka_logger.debug)
             ])
             vcs.register(Git)
-            load_command('bundle')
-        bundle = command_dict['bundle']
+        main_parser = create_main_parser()
+        bundle = commands['bundle'](main_parser)
         with self.archive_package() as (package_name, filename, filepath):
             bundle_filename = package_name + '.pybundle'
             if cache:
@@ -251,7 +252,8 @@ class Dist(LoggerProviderMixin):
                         continue
                     raise
                 finally:
-                    shutil.rmtree(options.build_dir)
+                    if os.path.isdir(options.build_dir):
+                        shutil.rmtree(options.build_dir)
                 break
             asuka_logger.debug('end: pip bundle %s %s', bundle_path, filepath)
             if cache:
