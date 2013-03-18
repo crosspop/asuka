@@ -179,6 +179,7 @@ class Dist(LoggerProviderMixin):
             load_command('bundle')
         bundle = command_dict['bundle']
         with self.archive_package() as (package_name, filename, filepath):
+            bundle_filename = package_name + '.pybundle'
             if cache:
                 cache_dir_path = os.path.join(
                     tempfile.gettempdir(),
@@ -186,16 +187,16 @@ class Dist(LoggerProviderMixin):
                 )
                 if not os.path.isdir(cache_dir_path):
                     os.makedirs(cache_dir_path)
-                cache_path = os.path.join(cache_dir_path, filename)
+                cache_path = os.path.join(cache_dir_path, bundle_filename)
                 if os.path.isfile(cache_path):
                     asuka_logger.info('cache exists: %s, skipping pybundle...',
                                       cache_path)
-                    yield package_name, filename, cache_path
+                    yield package_name, bundle_filename, cache_path
                     return
             tempdir = tempfile.gettempdir()
             bundle_path = os.path.join(
                 os.path.dirname(filepath),
-                package_name + '.pybundle'
+                bundle_filename
             )
             asuka_logger.info('pybundle_path = %r', bundle_path)
             options = optparse.Values()
@@ -255,7 +256,7 @@ class Dist(LoggerProviderMixin):
             asuka_logger.debug('end: pip bundle %s %s', bundle_path, filepath)
             if cache:
                 asuka_logger.info('save pybundle cache %s...', cache_path)
-                shutil.copyfile(filepath, cache_path)
+                shutil.copyfile(bundle_path, cache_path)
             yield package_name, os.path.basename(bundle_path), bundle_path
 
 

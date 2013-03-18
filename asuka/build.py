@@ -390,10 +390,9 @@ APTCACHE='/var/cache/apt/archives/'
                 # join instance_setup_worker
                 instance_setup_worker.join()
                 self.instance.tags['Status'] = 'apt-installed'
-                pip_cmd = (
-                    ['pip', 'install', '-i', PYPI_INDEX_URLS[0]] +
-                    ['--extra-index-url=' + idx for idx in PYPI_INDEX_URLS[1:]]
-                )
+                pip_cmd = ['pip', 'install', '-i', PYPI_INDEX_URLS[0]]
+                for idx in PYPI_INDEX_URLS[1:]:
+                    pip_cmd.append('--extra-index-url=' + idx)
                 sudo(pip_cmd + [remote_path], environ={'CI': '1'})
                 sudo(pip_cmd + ['-I'] + list(python_packages),
                      environ={'CI': '1'})
