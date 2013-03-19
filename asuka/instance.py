@@ -162,7 +162,7 @@ class Instance(LoggerProviderMixin):
             self.get_logger().info('connection closed')
             del self.local.client
 
-    def wait_state(self, state='running', timeout=90, tick=5):
+    def wait_state(self, state='running', timeout=120, tick=5):
         """Waits until the instance state becomes to the given
         goal ``state`` (default is ``'running'``).
 
