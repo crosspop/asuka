@@ -237,8 +237,10 @@ class BaseBuild(LoggerProviderMixin):
 
     def __repr__(self):
         c = type(self)
-        return '<{0}.{1} {2} {3}>'.format(c.__module__, c.__name__,
-                                          self.app.name, self.commit.ref)
+        return '<{0}.{1} {2} {3} {4}>'.format(
+            c.__module__, c.__name__,
+            self.app.name, self.branch.name, self.commit.ref
+        )
 
 
 class Build(BaseBuild):
