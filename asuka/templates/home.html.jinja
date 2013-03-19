@@ -17,6 +17,7 @@
         <tr>
           <th>Branch</th>
           <th>Commit</th>
+          <th colspan="2">Domains</th>
           {% if not group.grouper %}
             <th>Promote</th>
           {% endif %}
@@ -26,33 +27,50 @@
       </thead>
       <tbody>
         {% for deploy in group.list|sort(attribute='branch.name') %}
-          <tr>
-            <th>{{ deploy.branch|safe }}</th>
-            <td class="commit"><tt>{{ deploy.commit.ref }}</tt></td>
-            {% if not group.grouper %}
-              <td>
-                <form action="{{ request.build_url('start_promote',
-                                 label=deploy.branch.label) }}"
-                      method="post" class="promote">
-                  <input type="submit" value="Promote">
-                </form>
-              </td>
-            {% endif %}
-            <td>
-              <form action="{{ request.build_url('deploy_again',
-                               label=deploy.branch.label) }}"
-                    method="post" class="redeploy">
-                <input type="submit" value="Redeploy">
-              </form>
-            </td>
-            <td>
-              <form action="{{ request.build_url('terminate',
-                               label=deploy.branch.label) }}"
-                    method="post" class="terminate">
-                <input type="submit" value="Terminate">
-              </form>
-            </td>
-          </tr>
+          {% with domains = deploy.domains, rows = domains|count or 1 %}
+            {% for service, domain in domains.items() or [(None, None)] %}
+              <tr>
+                {% if loop.first %}
+                  <th rowspan="{{ rows }}">{{ deploy.branch|safe }}</th>
+                  <td class="commit"
+                      rowspan="{{ rows }}"><tt>{{ deploy.commit.ref }}</tt></td>
+                {% endif%}
+                <th class="domain-service">{{ service }}</th>
+                {% with domain_name = domain[:-1]
+                                      if domain and domain.endswith('.')
+                                      else domain %}
+                  <td class="domain-name">
+                    <a href="http://{{ domain_name }}/">{{ domain_name }}</a>
+                  </td>
+                {% endwith %}
+                {% if loop.first %}
+                  {% if not group.grouper %}
+                    <td rowspan="{{ rows }}">
+                      <form action="{{ request.build_url('start_promote',
+                                       label=deploy.branch.label) }}"
+                            method="post" class="promote">
+                        <input type="submit" value="Promote">
+                      </form>
+                    </td>
+                  {% endif %}
+                  <td rowspan="{{ rows }}">
+                    <form action="{{ request.build_url('deploy_again',
+                                     label=deploy.branch.label) }}"
+                          method="post" class="redeploy">
+                      <input type="submit" value="Redeploy">
+                    </form>
+                  </td>
+                  <td rowspan="{{ rows }}">
+                    <form action="{{ request.build_url('terminate',
+                                     label=deploy.branch.label) }}"
+                          method="post" class="terminate">
+                      <input type="submit" value="Terminate">
+                    </form>
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          {% endwith %}
         {% endfor %}
       </tbody>
     </table>

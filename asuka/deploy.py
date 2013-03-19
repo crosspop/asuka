@@ -68,6 +68,19 @@ class Deployment(object):
                                   .tagged('Commit', commit.ref) \
                                   .tagged('Live', 'live' if self.live else '')
 
+    @property
+    def domains(self):
+        """(:class:`collections.Mapping`) The mapping of routed domain names.
+        Keys are service names and values are domain names.
+
+        """
+        domains = {}
+        for instance in self.instances:
+            for tag, value in instance.tags.iteritems():
+                if tag.startswith('Domain-'):
+                    domains[tag[7:]] = value
+        return domains
+
     def __repr__(self):
         c = type(self)
         return '<{0}.{1} {2} {3} {4}{5}>'.format(

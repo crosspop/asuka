@@ -443,6 +443,7 @@ APTCACHE='/var/cache/apt/archives/'
                 domain = domain_format.format(branch=self.branch)
                 deployed_domains[service_name] = domain
                 service.route_domain(domain, changeset)
+                self.instance.tags['Domain-' + service_name] = domain
             if changeset.changes:
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
                 changeset.commit()
