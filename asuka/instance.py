@@ -106,9 +106,9 @@ class Instance(LoggerProviderMixin):
     login = None
 
     #: (:class:`Metadata`) The tags mapping of the instance.
-    metadata = None
+    tags = None
 
-    def __init__(self, app, instance, login):
+    def __init__(self, app, instance, login=None):
         from .app import App
         if not isinstance(app, App):
             raise TypeError('app must be an instance of asuka.app.App, not ' +
@@ -116,12 +116,12 @@ class Instance(LoggerProviderMixin):
         elif not isinstance(instance, EC2Instance):
             raise TypeError('instance must be an instance of boto.ec2.'
                             'instance.Instance, not ' + repr(instance))
-        elif not isinstance(login, basestring):
+        elif not (login is None or isinstance(login, basestring)):
             raise TypeError('login name must be a string, not ' +
                             repr(login))
         self.app = app
         self.instance = instance
-        self.login = login
+        self.login = login or AMI_LOGIN_MAP.get(instance.image_id, 'root')
         self.local = threading.local()
         self.tags = Metadata(self)
 

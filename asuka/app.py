@@ -20,7 +20,7 @@ from werkzeug.utils import cached_property
 
 from .instance import REGION_AMI_MAP, AMI_LOGIN_MAP, Instance
 
-__all__ = 'App', 'DeployedBranchDict'
+__all__ = 'App', 'DeployedBranchDict', 'InstanceSet'
 
 
 class App(object):
@@ -312,6 +312,14 @@ class App(object):
         instance = reserve.instances[0]
         return Instance(self, instance, login)
 
+    @property
+    def instances(self):
+        """(:class:`InstanceSet`) :class:`~asuka.instance.Instance`\ s
+        belong to the app.
+
+        """
+        return InstanceSet(self)
+
     @cached_property
     def consistent_secret(self):
         """(:class:`str`) The secret key consistent for every deployment
@@ -363,6 +371,63 @@ class App(object):
         return '<{0}.{1} {2!r}>'.format(c.__module__, c.__name__, self.name)
 
 
+class InstanceSet(collections.Set):
+    """The set of instances.
+
+    :param app: the app object
+    :type app: :class:`App`
+    :param tags: dictionary of tags to filter.  default is empty
+    :type tags: :class:`collections.Mapping`
+
+    """
+
+    def __init__(self, app, tags={}):
+        self.app = app
+        self.tags = {'App': app.name}
+        self.tags.update(tags)
+
+    def tagged(self, tag, value):
+        """Filters instances by ``tag`` and its ``value``.  For example::
+
+            instances.tagged('Branch', 'master').tagged('Status', 'done')
+
+        :param tag: tag name to filter
+        :type tag: :class:`basestring`
+        :param value: tag value that has to be matched
+        :type value: :class:`basestring`
+        :returns: a filtered new set object
+        :rtype: :class:`InstanceSet`
+
+        """
+        tags = {tag: value}
+        tags.update(self.tags)
+        return type(self)(self.app, tags)
+
+    def __iter__(self):
+        app = self.app
+        ec2_conn = app.ec2_connection
+        filters = dict(('tag:' + tag, value)
+                       for tag, value in self.tags.iteritems())
+        filters['instance-state-name'] = 'running'
+        try:
+            reservations = ec2_conn.get_all_instances(filters=filters)
+            for reserve in reservations:
+                for instance in reserve.instances:
+                    yield Instance(self.app, instance)
+        except EC2ResponseError:
+            pass
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+    def __contains__(self, instance):
+        if isinstance(instance, Instance):
+            for i in self:
+                if i.instance.id == instance.instance.id:
+                    return True
+        return False
+
+
 class DeployedBranchDict(collections.Mapping):
     """The mapping of deployed branches and commits."""
 
@@ -375,29 +440,19 @@ class DeployedBranchDict(collections.Mapping):
 
     def itertags(self):
         app = self.app
-        try:
-            reservations = app.ec2_connection.get_all_instances(filters={
-                'tag:App': app.name,
-                'instance-state-name': 'running'
-            })
-            self.branches = {}
-            for reserve in reservations:
-                for instance in reserve.instances:
-                    tags = instance.tags
-                    if tags.get('Status') != 'done':
-                        continue
-                    elif tags.get('Live', '') == 'live':
-                        continue
-                    try:
-                        branch = tags['Branch']
-                        commit = tags['Commit']
-                    except KeyError:
-                        continue
-                    if branch not in self.branches:
-                        self.branches[branch] = commit
-                        yield branch, commit
-        except EC2ResponseError:
-            pass
+        self.branches = {}
+        for instance in app.instances.tagged('Status', 'done'):
+            tags = dict(instance.tags)
+            if tags.get('Live', '') == 'live':
+                continue
+            try:
+                branch = tags['Branch']
+                commit = tags['Commit']
+            except KeyError:
+                continue
+            if branch not in self.branches:
+                self.branches[branch] = commit
+                yield branch, commit
 
     def __len__(self):
         if self.branches is None:
