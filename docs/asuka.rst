@@ -10,6 +10,7 @@
       asuka/cli
       asuka/commit
       asuka/config
+      asuka/deploy
       asuka/dist
       asuka/instance
       asuka/logger

@@ -6,47 +6,57 @@
 
 {% block body %}
   {{ super() }}
-  <h2>Deployed branches</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Branch</th>
-        <th>Commit</th>
-        <th>Promote</th>
-        <th>Redeploy</th>
-        <th>Terminate</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for branch, commit in branches.items() %}
+  {% for group in deployments|groupby('live')|reverse %}
+    {% if group.grouper %}
+      <h2>Promoted branch</h2>
+    {% else %}
+      <h2>Deployed branches</h2>
+    {% endif %}
+    <table>
+      <thead>
         <tr>
-          <th>{{ branch|safe }}</th>
-          <td class="commit"><tt>{{ commit.ref }}</tt></td>
-          <td>
-            <form action="{{ request.build_url('start_promote',
-                             label=branch.label) }}"
-                  method="post" class="promote">
-              <input type="submit" value="Promote">
-            </form>
-          </td>
-          <td>
-            <form action="{{ request.build_url('deploy_again',
-                             label=branch.label) }}"
-                  method="post" class="redeploy">
-              <input type="submit" value="Redeploy">
-            </form>
-          </td>
-          <td>
-            <form action="{{ request.build_url('terminate',
-                             label=branch.label) }}"
-                  method="post" class="terminate">
-              <input type="submit" value="Terminate">
-            </form>
-          </td>
+          <th>Branch</th>
+          <th>Commit</th>
+          {% if not group.grouper %}
+            <th>Promote</th>
+          {% endif %}
+          <th>Redeploy</th>
+          <th>Terminate</th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for deploy in group.list|sort(attribute='branch.name') %}
+          <tr>
+            <th>{{ deploy.branch|safe }}</th>
+            <td class="commit"><tt>{{ deploy.commit.ref }}</tt></td>
+            {% if not group.grouper %}
+              <td>
+                <form action="{{ request.build_url('start_promote',
+                                 label=deploy.branch.label) }}"
+                      method="post" class="promote">
+                  <input type="submit" value="Promote">
+                </form>
+              </td>
+            {% endif %}
+            <td>
+              <form action="{{ request.build_url('deploy_again',
+                               label=deploy.branch.label) }}"
+                    method="post" class="redeploy">
+                <input type="submit" value="Redeploy">
+              </form>
+            </td>
+            <td>
+              <form action="{{ request.build_url('terminate',
+                               label=deploy.branch.label) }}"
+                    method="post" class="terminate">
+                <input type="submit" value="Terminate">
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
   <form action="{{ request.build_url('deploy_manually') }}"
         method="post" class="deploy">
     <fieldset>

@@ -172,8 +172,8 @@ def authorize(request):
 @auth_required
 def home(request):
     """The list of deployed branches."""
-    branches = request.app.app.deployed_branches
-    return render(request, branches, 'home', branches=branches)
+    deployments = request.app.app.deployments
+    return render(request, deployments, 'home', deployments=deployments)
 
 
 @WebApp.route('/deploy', methods=['POST'])

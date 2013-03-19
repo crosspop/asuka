@@ -341,6 +341,12 @@ class App(object):
         """
         return DeployedBranchDict(self)
 
+    @property
+    def deployments(self):
+        """(:class:`collections.Set`) The set of current deployments."""
+        from .deploy import Deployment
+        return Deployment.from_app(self)
+
     def __eq__(self, operand):
         return isinstance(operand, type(self)) and operand.name == self.name
 
