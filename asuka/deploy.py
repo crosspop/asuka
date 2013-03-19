@@ -64,7 +64,7 @@ class Deployment(object):
         self.commit = commit
         self.live = bool(live)
         instances = self.app.instances
-        self.instances = instances.tagged('Branch', branch.name) \
+        self.instances = instances.tagged('Branch', branch.label) \
                                   .tagged('Commit', commit.ref) \
                                   .tagged('Live', 'live' if self.live else '')
 
