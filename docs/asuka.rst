@@ -16,5 +16,6 @@
       asuka/logger
       asuka/service
       asuka/services
+      asuka/urls
       asuka/version
       asuka/web

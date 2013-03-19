@@ -137,7 +137,7 @@
       <h1>アスカ</h1>
       <nav>
         {% with app = request.app.app %}
-          <a href="{{ app.repository.html_url }}"
+          <a href="{{ app|repository_url }}"
              class="app-name">{{ app.name }}</a>
         {% endwith %}
         <a href="{{ request.build_url('home') }}">Deployed branches</a>

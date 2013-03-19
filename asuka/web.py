@@ -29,6 +29,7 @@ from werkzeug.exceptions import BadRequest, Forbidden
 from werkzeug.urls import url_decode, url_encode
 from werkzeug.utils import redirect
 
+from . import urls
 from .app import App
 from .branch import Branch, PullRequest, find_by_label
 from .build import Build, Clean, Promote
@@ -92,6 +93,12 @@ WebApp.associate_mimetypes({
 jinja_env = Environment(
     loader=PackageLoader(__name__, WebApp.template_path),
     extensions=['jinja2.ext.with_']
+)
+
+# Register functions of :mod:`asuka.urls` as Jinja2 filters.
+jinja_env.filters.update(
+    (fn + '_url', getattr(urls, fn))
+    for fn in urls.__all__
 )
 
 
