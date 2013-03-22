@@ -36,8 +36,10 @@
                       rowspan="{{ rows }}"><tt>{{ deploy.commit.ref }}</tt></td>
                 {% endif%}
                 <th class="domain-service">
-                  <a href="{{ deploy|service_config_file_url(service) }}"><tt>
-                    {{- service }}</tt></a>
+                  {% if service %}
+                    <a href="{{ deploy|service_config_file_url(service) }}"><tt>
+                      {{- service }}</tt></a>
+                  {% endif %}
                 </th>
                 {% with domain_name = domain[:-1]
                                       if domain and domain.endswith('.')
