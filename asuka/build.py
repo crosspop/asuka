@@ -359,7 +359,8 @@ APTCACHE='/var/cache/apt/archives/'
         )
         instance_setup_worker.start()
         # setup metadata of the instance
-        self.update_instance_metadata({'Status': 'started'})
+        self.update_instance_metadata()
+        self.instance.status = 'started'
         # making package (pybundle)
         fd, package_path = tempfile.mkstemp()
         os.close(fd)
@@ -391,14 +392,14 @@ APTCACHE='/var/cache/apt/archives/'
                 self.instance.put_file(package_path, remote_path)
                 # join instance_setup_worker
                 instance_setup_worker.join()
-                self.instance.tags['Status'] = 'apt-installed'
+                self.instance.status = 'apt-installed'
                 pip_cmd = ['pip', 'install', '-i', PYPI_INDEX_URLS[0]]
                 for idx in PYPI_INDEX_URLS[1:]:
                     pip_cmd.append('--extra-index-url=' + idx)
                 sudo(pip_cmd + [remote_path], environ={'CI': '1'})
                 sudo(pip_cmd + ['-I'] + list(python_packages),
                      environ={'CI': '1'})
-                self.instance.tags['Status'] = 'installed'
+                self.instance.status = 'installed'
                 for service in service_manifests[1:]:
                     for cmd in service.pre_install:
                         sudo(cmd, environ={'DEBIAN_FRONTEND': 'noninteractive'})
@@ -426,7 +427,7 @@ APTCACHE='/var/cache/apt/archives/'
                            for service in service_manifests[1:])
         deployed_domains = {}
         if self.route53_hosted_zone_id and self.route53_records:
-            self.instance.tags['Status'] = 'run'
+            self.instance.status = 'run'
             changeset = ResourceRecordSets(
                 self.app.route53_connection,
                 self.route53_hosted_zone_id,
@@ -447,7 +448,7 @@ APTCACHE='/var/cache/apt/archives/'
             if changeset.changes:
                 logger.info('Route 53 changeset:\n%s', changeset.to_xml())
                 changeset.commit()
-        self.instance.tags['Status'] = 'done'
+        self.instance.status = 'done'
         self.terminate_instances()
         return deployed_domains
 

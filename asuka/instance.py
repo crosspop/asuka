@@ -99,6 +99,9 @@ class Instance(LoggerProviderMixin):
     #: (:class:`~asuka.app.App`) The app object.
     app = None
 
+    #: (:class:`basestring`) The unique identifier of the EC2 instance.
+    id = None
+
     #: (:class:`boto.ec2.instance.Instance`) The EC2 instance.
     instance = None
 
@@ -120,6 +123,7 @@ class Instance(LoggerProviderMixin):
             raise TypeError('login name must be a string, not ' +
                             repr(login))
         self.app = app
+        self.id = instance.id
         self.instance = instance
         self.login = login or AMI_LOGIN_MAP.get(instance.image_id, 'root')
         self.local = threading.local()
@@ -457,6 +461,20 @@ class Instance(LoggerProviderMixin):
         else:
             with self.sftp() as sftp:
                 sftp.remove(path)
+
+    @property
+    def status(self):
+        """(:class:`basestring`) The current status of the instance
+        e.g. ``'not-ready'``, ``'started'``, ``'apt-installed'``,
+        ``'installed'``, ``'run'``, ``'done'``.
+
+        """
+        return self.tags.get('Status', 'not-ready')
+
+    @status.setter
+    def status(self, status):
+        status = str(status)
+        self.tags['Status'] = status
 
 
 class Metadata(collections.MutableMapping):

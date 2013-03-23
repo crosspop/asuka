@@ -4,6 +4,22 @@
   Deployed branches &mdash; {{ super() }}
 {%- endblock %}
 
+{% block css %}
+  {{ super() }}
+  table td.ec2-state-pending { color: orange; }
+  table td.ec2-state-running { color: green; }
+  table td.ec2-state-shutting-down,
+  table td.ec2-state-stopping { color: #af7817; }
+  table td.ec2-state-terminated,
+  table td.ec2-state-stopped { color: maroon; }
+  table td.status-not-ready { color: gray; }
+  table td.status-started { color: orange; }
+  table td.status-apt-installed { color: #ede275; }
+  table td.status-installed { color: lime; }
+  table td.status-run { color: #52d017; }
+  table td.status-done { color: green; }
+{% endblock %}
+
 {% block body %}
   {{ super() }}
   {% for group in deployments|groupby('live')|reverse %}
@@ -18,6 +34,7 @@
           <th>Branch</th>
           <th>Commit</th>
           <th colspan="2">Domains</th>
+          <th colspan="3">Instances</th>
           {% if not group.grouper %}
             <th>Promote</th>
           {% endif %}
@@ -27,8 +44,12 @@
       </thead>
       <tbody>
         {% for deploy in group.list|sort(attribute='branch.name') %}
-          {% with domains = deploy.domains, rows = domains|count or 1 %}
-            {% for service, domain in domains.items() or [(None, None)] %}
+          {% with domains = deploy.domains,
+                  services = domains.keys() or [None],
+                  instances = deploy.instances|list,
+                  rows = (domains|count if domains|count > instances|count
+                                        else instances|count) %}
+            {% for i in range(rows) %}
               <tr>
                 {% if loop.first %}
                   <th rowspan="{{ rows }}">{{ deploy.branch|safe }}</th>
@@ -37,18 +58,27 @@
                       {{- deploy.commit.ref }}</tt></a>
                   </td>
                 {% endif%}
-                <th class="domain-service">
-                  {% if service %}
-                    <a href="{{ deploy|service_config_file_url(service) }}"><tt>
-                      {{- service }}</tt></a>
-                  {% endif %}
-                </th>
-                {% with domain_name = domain[:-1]
-                                      if domain and domain.endswith('.')
-                                      else domain %}
-                  <td class="domain-name">
-                    <a href="http://{{ domain_name }}/">{{ domain_name }}</a>
-                  </td>
+                {% with service = services[i] %}
+                  <th class="domain-service">
+                    {% if service %}
+                      <a href="
+                        {{- deploy|service_config_file_url(service) }}"><tt>
+                        {{- service }}</tt></a>
+                    {% endif %}
+                  </th>
+                  {% with domain = domains[services[i]],
+                          domain_name = domain[:-1]
+                                        if domain and domain.endswith('.')
+                                        else domain %}
+                    <td class="domain-name">
+                      <a href="http://{{ domain_name }}/">{{ domain_name }}</a>
+                    </td>
+                  {% endwith %}
+                {% endwith %}
+                {% with inst = instances[i], state = inst.instance.state %}
+                  <td><tt>{{ inst.id }}</tt></td>
+                  <td class="ec2-state-{{ state }}">{{ state }}</td>
+                  <td class="status-{{ inst.status }}">{{ inst.status }}</td>
                 {% endwith %}
                 {% if loop.first %}
                   {% if not group.grouper %}
