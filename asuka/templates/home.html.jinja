@@ -32,8 +32,10 @@
               <tr>
                 {% if loop.first %}
                   <th rowspan="{{ rows }}">{{ deploy.branch|safe }}</th>
-                  <td class="commit"
-                      rowspan="{{ rows }}"><tt>{{ deploy.commit.ref }}</tt></td>
+                  <td class="commit" rowspan="{{ rows }}">
+                    <a href="{{ deploy.commit|commit_url }}"><tt>
+                      {{- deploy.commit.ref }}</tt></a>
+                  </td>
                 {% endif%}
                 <th class="domain-service">
                   {% if service %}

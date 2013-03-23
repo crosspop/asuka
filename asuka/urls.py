@@ -3,12 +3,17 @@
 
 """
 
-__all__ = 'repository', 'service_config_file'
+__all__ = 'commit', 'repository', 'service_config_file'
 
 
 def repository(app):
     """GitHub repository."""
     return app.repository.html_url
+
+
+def commit(commit):
+    """Commit changeset page."""
+    return repository(commit.app) + '/commit/' + commit.ref
 
 
 def service_config_file(deployment, service):
