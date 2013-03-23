@@ -6,4 +6,5 @@
 
       services/pgsql
       services/statics3
+      services/worker
       services/wsgi
